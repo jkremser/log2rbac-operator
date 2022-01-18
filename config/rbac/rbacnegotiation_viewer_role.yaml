@@ -1,0 +1,20 @@
+# permissions for end users to view rbacnegotiations.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: rbacnegotiation-viewer-role
+rules:
+- apiGroups:
+  - kremser.dev
+  resources:
+  - rbacnegotiations
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - kremser.dev
+  resources:
+  - rbacnegotiations/status
+  verbs:
+  - get
