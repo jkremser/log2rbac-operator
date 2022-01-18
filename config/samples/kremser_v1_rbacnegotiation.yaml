@@ -3,4 +3,7 @@ kind: RbacNegotiation
 metadata:
   name: rbacnegotiation-sample
 spec:
-  # TODO(user): Add fields here
+  for:
+    namespace: default
+    kind: Deployment
+    name: test-echo

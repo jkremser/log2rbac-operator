@@ -26,6 +26,9 @@ spec:
     - jsonPath: .spec.for.name
       name: name
       type: string
+    - jsonPath: .spec.roleRef.Name
+      name: role
+      type: string
     - jsonPath: .spec.status.status
       name: status
       type: string
@@ -52,12 +55,33 @@ spec:
               for:
                 properties:
                   kind:
+                    enum:
+                    - Deployment
+                    - ReplicaSet
                     type: string
                   name:
                     type: string
                   namespace:
                     type: string
                 required:
+                - name
+                type: object
+              roleRef:
+                description: RoleRef contains information that points to the role
+                  being used
+                properties:
+                  apiGroup:
+                    description: APIGroup is the group for the resource being referenced
+                    type: string
+                  kind:
+                    description: Kind is the type of resource being referenced
+                    type: string
+                  name:
+                    description: Name is the name of resource being referenced
+                    type: string
+                required:
+                - apiGroup
+                - kind
                 - name
                 type: object
             required:
@@ -67,6 +91,7 @@ spec:
             description: RbacNegotiationStatus defines the observed state of RbacNegotiation
             type: object
         type: object
+        x-kubernetes-preserve-unknown-fields: true
     served: true
     storage: true
     subresources:

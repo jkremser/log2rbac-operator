@@ -17,10 +17,23 @@ limitations under the License.
 package controllers
 
 import (
+	"bytes"
 	"context"
+	"fmt"
+	"io"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/util/homedir"
+	"os"
+	"path/filepath"
+	"strings"
 
+	apps "k8s.io/api/apps/v1"
+	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
+
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
@@ -52,9 +65,99 @@ type RbacNegotiationReconciler struct {
 func (r *RbacNegotiationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
-	// TODO(user): your logic here
-
+	log.Log.Info("fetching RbacNegotiation resource")
+	rbacNeg := kremserv1.RbacNegotiation{}
+	if err := r.Client.Get(ctx, req.NamespacedName, &rbacNeg); err != nil {
+		log.Log.Error(err, "failed to get RbacNegotiation resource")
+		// Ignore NotFound errors as they will be retried automatically if the
+		// resource is created in the future.
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+	log.Log.Info(fmt.Sprintf("New rbac negotiation event: for kind=%s and name=%s", rbacNeg.Spec.For.Kind, rbacNeg.Spec.For.Name))
+	r.handleResource(ctx, rbacNeg.Spec.For)
 	return ctrl.Result{}, nil
+}
+
+func (r *RbacNegotiationReconciler) handleResource(ctx context.Context, resource kremserv1.ForSpec) {
+	logs, err := r.logsFromFirstPod(ctx, resource)
+	if err != nil {
+		log.Log.Error(err, "Unable to get logs from underlying pod")
+	}
+	log.Log.Info(logs)
+	//if logs.contain that string edit the role to contain that exception and restart the pod
+}
+
+func (r *RbacNegotiationReconciler) logsFromFirstPod(ctx context.Context, resource kremserv1.ForSpec) (string, error) {
+	var selector map[string]string
+	switch strings.ToLower(resource.Kind) {
+	case "deploy", "deployment", "deployments":
+		nsName := client.ObjectKey{
+			Namespace: resource.Namespace,
+			Name:      resource.Name,
+		}
+		dep := apps.Deployment{}
+		if err := r.Client.Get(ctx, nsName, &dep); err != nil {
+			return "", err
+		}
+		selector = dep.Spec.Selector.MatchLabels
+	default:
+		return "", fmt.Errorf("unrecognized kind: '%s'", resource.Kind)
+	}
+
+	var podList core.PodList
+	if err := r.Client.List(ctx, &podList, client.InNamespace(resource.Namespace), client.MatchingLabels(selector)); err != nil {
+		return "", err
+	}
+	pods := podList.Items
+	if len(pods) == 0 {
+		return "", fmt.Errorf("no pods found for %s called '%s'", resource.Kind, resource.Name)
+	}
+	podName := pods[0].GetName()
+	req := r.K8sClient().CoreV1().Pods(resource.Namespace).GetLogs(podName, &core.PodLogOptions{})
+	podLogs, err := req.Stream(ctx)
+	if err != nil {
+		return "", err
+	}
+	defer podLogs.Close()
+
+	buf := new(bytes.Buffer)
+	_, err = io.Copy(buf, podLogs)
+	if err != nil {
+		return "", err
+	}
+	str := buf.String()
+
+	return str, nil
+}
+
+func (r *RbacNegotiationReconciler) K8sClient() *kubernetes.Clientset {
+	var config *rest.Config
+	var err error
+	_, inCluster := os.LookupEnv("KUBERNETES_SERVICE_HOST")
+	if !inCluster {
+		var kubeconfig string
+		if home := homedir.HomeDir(); home != "" {
+			log.Log.Info("Using kubeconfig from:" + filepath.Join(home, ".kube", "config"))
+			kubeconfig = filepath.Join(home, ".kube", "config")
+		}
+
+		// use the current context in kubeconfig
+		config, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		// creates the in-cluster config
+		config, err = rest.InClusterConfig()
+		if err != nil {
+			panic(err)
+		}
+	}
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		panic(err)
+	}
+	return clientset
 }
 
 // SetupWithManager sets up the controller with the Manager.

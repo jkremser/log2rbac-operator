@@ -17,6 +17,7 @@ limitations under the License.
 package v1
 
 import (
+	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -25,6 +26,7 @@ import (
 
 // +k8s:openapi-gen=true
 type ForSpec struct {
+	//+kubebuilder:validation:Enum={Deployment,ReplicaSet}
 	Kind      string `json:"kind,omitempty"`
 	Name      string `json:"name"`
 	Namespace string `json:"namespace,omitempty"`
@@ -37,6 +39,8 @@ type RbacNegotiationSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	For ForSpec `json:"for"`
+	// +kubebuilder:printcolumn
+	RoleRef rbacv1.RoleRef `json:"roleRef,omitempty"`
 }
 
 // RbacNegotiationStatus defines the observed state of RbacNegotiation
@@ -51,8 +55,10 @@ type RbacNegotiationStatus struct {
 // RbacNegotiation is the Schema for the rbacnegotiations API
 // +kubebuilder:printcolumn:name="kind",type=string,JSONPath=`.spec.for.kind`
 // +kubebuilder:printcolumn:name="name",type=string,JSONPath=`.spec.for.name`
+// +kubebuilder:printcolumn:name="role",type=string,JSONPath=`.spec.roleRef.Name`
 // +kubebuilder:printcolumn:name="status",type=string,JSONPath=`.spec.status.status`
 // +kubebuilder:resource:shortName={rn,rbacn}
+// +kubebuilder:pruning:PreserveUnknownFields
 type RbacNegotiation struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
