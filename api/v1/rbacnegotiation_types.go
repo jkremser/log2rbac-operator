@@ -23,12 +23,19 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+// +k8s:openapi-gen=true
+type ForSpec struct {
+	Kind      string `json:"kind,omitempty"`
+	Name      string `json:"name"`
+	Namespace string `json:"namespace,omitempty"`
+}
+
 // RbacNegotiationSpec defines the desired state of RbacNegotiation
+// +k8s:openapi-gen=true
 type RbacNegotiationSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Foo is an example field of RbacNegotiation. Edit rbacnegotiation_types.go to remove/update
 	For ForSpec `json:"for"`
 }
 
@@ -41,13 +48,11 @@ type RbacNegotiationStatus struct {
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 
-type ForSpec struct {
-	Kind string `json:"kind,omitempty"`
-	Name string `json:"name"`
-	Namespace string `json:"namespace,omitempty"`
-}
-
 // RbacNegotiation is the Schema for the rbacnegotiations API
+// +kubebuilder:printcolumn:name="kind",type=string,JSONPath=`.spec.for.kind`
+// +kubebuilder:printcolumn:name="name",type=string,JSONPath=`.spec.for.name`
+// +kubebuilder:printcolumn:name="status",type=string,JSONPath=`.spec.status.status`
+// +kubebuilder:resource:shortName={rn,rbacn}
 type RbacNegotiation struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

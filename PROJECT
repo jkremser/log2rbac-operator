@@ -1,7 +1,7 @@
 domain: dev
 layout:
 - go.kubebuilder.io/v3
-projectName: foo-perator2
+projectName: log2rbac-operator
 repo: jkremser/log2rbac-operator
 resources:
 - api:
