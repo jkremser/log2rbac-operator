@@ -21,17 +21,12 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/client-go/util/homedir"
-	"os"
-	"path/filepath"
+	"k8s.io/apimachinery/pkg/runtime"
 	"strings"
 
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -43,7 +38,8 @@ import (
 // RbacNegotiationReconciler reconciles a RbacNegotiation object
 type RbacNegotiationReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
+	clientset *kubernetes.Clientset
+	Scheme    *runtime.Scheme
 }
 
 //+kubebuilder:rbac:groups=kremser.dev,resources=rbacnegotiations,verbs=get;list;watch;create;update;patch;delete
@@ -79,16 +75,26 @@ func (r *RbacNegotiationReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 }
 
 func (r *RbacNegotiationReconciler) handleResource(ctx context.Context, resource kremserv1.ForSpec) {
-	logs, err := r.logsFromFirstPod(ctx, resource)
+	logs, sa, err := r.logsFromFirstPod(ctx, resource)
 	if err != nil {
 		log.Log.Error(err, "Unable to get logs from underlying pod")
 	}
-	log.Log.Info(logs)
 	//if logs.contain that string edit the role to contain that exception and restart the pod
+	missingRbacEntry := FindRecord(logs, resource.Namespace, sa)
+	addMissingRbacEntry(sa, missingRbacEntry)
+	
+	// make this optional
+	//restartPods()
+	log.Log.Info("%#v", missingRbacEntry)
 }
 
-func (r *RbacNegotiationReconciler) logsFromFirstPod(ctx context.Context, resource kremserv1.ForSpec) (string, error) {
+func addMissingRbacEntry(sa string, entry RbacEntry) {
+	
+}
+
+func (r *RbacNegotiationReconciler) logsFromFirstPod(ctx context.Context, resource kremserv1.ForSpec) (string, string, error) {
 	var selector map[string]string
+	var sa string
 	switch strings.ToLower(resource.Kind) {
 	case "deploy", "deployment", "deployments":
 		nsName := client.ObjectKey{
@@ -97,67 +103,45 @@ func (r *RbacNegotiationReconciler) logsFromFirstPod(ctx context.Context, resour
 		}
 		dep := apps.Deployment{}
 		if err := r.Client.Get(ctx, nsName, &dep); err != nil {
-			return "", err
+			return "", "", err
 		}
 		selector = dep.Spec.Selector.MatchLabels
+		sa = dep.Spec.Template.Spec.ServiceAccountName
 	default:
-		return "", fmt.Errorf("unrecognized kind: '%s'", resource.Kind)
+		return "", "", fmt.Errorf("unrecognized kind: '%s'", resource.Kind)
 	}
 
 	var podList core.PodList
 	if err := r.Client.List(ctx, &podList, client.InNamespace(resource.Namespace), client.MatchingLabels(selector)); err != nil {
-		return "", err
+		return "", "", err
 	}
 	pods := podList.Items
 	if len(pods) == 0 {
-		return "", fmt.Errorf("no pods found for %s called '%s'", resource.Kind, resource.Name)
+		return "", "", fmt.Errorf("no pods found for %s called '%s'", resource.Kind, resource.Name)
 	}
 	podName := pods[0].GetName()
-	req := r.K8sClient().CoreV1().Pods(resource.Namespace).GetLogs(podName, &core.PodLogOptions{})
+	req := r.ClientSet().CoreV1().Pods(resource.Namespace).GetLogs(podName, &core.PodLogOptions{})
 	podLogs, err := req.Stream(ctx)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	defer podLogs.Close()
 
 	buf := new(bytes.Buffer)
 	_, err = io.Copy(buf, podLogs)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	str := buf.String()
 
-	return str, nil
+	return str, sa, nil
 }
 
-func (r *RbacNegotiationReconciler) K8sClient() *kubernetes.Clientset {
-	var config *rest.Config
-	var err error
-	_, inCluster := os.LookupEnv("KUBERNETES_SERVICE_HOST")
-	if !inCluster {
-		var kubeconfig string
-		if home := homedir.HomeDir(); home != "" {
-			log.Log.Info("Using kubeconfig from:" + filepath.Join(home, ".kube", "config"))
-			kubeconfig = filepath.Join(home, ".kube", "config")
-		}
-
-		// use the current context in kubeconfig
-		config, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
-		if err != nil {
-			panic(err)
-		}
-	} else {
-		// creates the in-cluster config
-		config, err = rest.InClusterConfig()
-		if err != nil {
-			panic(err)
-		}
+func (r *RbacNegotiationReconciler) ClientSet() *kubernetes.Clientset {
+	if r.clientset == nil {
+		r.clientset = SetupK8sClient()
 	}
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		panic(err)
-	}
-	return clientset
+	return r.clientset
 }
 
 // SetupWithManager sets up the controller with the Manager.
