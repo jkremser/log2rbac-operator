@@ -35,11 +35,11 @@ func TestGoClientLog1(t *testing.T) {
 		Verb: "list",
 		Object: RbacResource{
 			Group: "",
-			Kind: "nodes",
+			Kind:  "nodes",
 		},
 		ObjectNS: "",
 	}
-	got := FindRecord(log, "log2rbac-operator-system", "log2rbac-operator-controller-manager")
+	got := FindRbacEntry(log, "log2rbac-operator-system", "log2rbac-operator-controller-manager")
 	require.Equal(t, want, got)
 }
 
@@ -50,11 +50,11 @@ func TestGoClientLog2(t *testing.T) {
 		Verb: "list",
 		Object: RbacResource{
 			Group: "",
-			Kind: "configmaps",
+			Kind:  "configmaps",
 		},
 		ObjectNS: "",
 	}
-	got := FindRecord(log, "log2rbac-operator-system", "log2rbac-operator-controller-manager")
+	got := FindRbacEntry(log, "log2rbac-operator-system", "log2rbac-operator-controller-manager")
 	require.Equal(t, want, got)
 }
 
@@ -66,11 +66,11 @@ func TestGoClientLog3(t *testing.T) {
 		Verb: "list",
 		Object: RbacResource{
 			Group: "rbac.authorization.k8s.io",
-			Kind: "clusterrolebindings",
+			Kind:  "clusterrolebindings",
 		},
 		ObjectNS: "",
 	}
-	got := FindRecord(log, "log2rbac-operator-system", "log2rbac-operator-controller-manager")
+	got := FindRbacEntry(log, "log2rbac-operator-system", "log2rbac-operator-controller-manager")
 	require.Equal(t, want, got)
 }
 
@@ -81,11 +81,11 @@ func TestJavascriptClientLog1(t *testing.T) {
 		Verb: "list",
 		Object: RbacResource{
 			Group: "batch",
-			Kind: "jobs",
+			Kind:  "jobs",
 		},
 		ObjectNS: "default",
 	}
-	got := FindRecord(log,"foo", "bar")
+	got := FindRbacEntry(log, "foo", "bar")
 	require.Equal(t, want, got)
 }
 
@@ -95,11 +95,11 @@ func TestJavaClientLog1(t *testing.T) {
 		Verb: "get",
 		Object: RbacResource{
 			Group: "",
-			Kind: "pods",
+			Kind:  "pods",
 		},
 		ObjectNS: "staging",
 	}
-	got := FindRecord(log,"staging", "default")
+	got := FindRbacEntry(log, "staging", "default")
 	require.Equal(t, want, got)
 }
 
@@ -109,11 +109,11 @@ func TestJavaClientLog2(t *testing.T) {
 		Verb: "get",
 		Object: RbacResource{
 			Group: "",
-			Kind: "deployments.extensions",
+			Kind:  "deployments.extensions",
 		},
 		ObjectNS: "default",
 	}
-	got := FindRecord(log,"default", "my-svc-account")
+	got := FindRbacEntry(log, "default", "my-svc-account")
 	require.Equal(t, want, got)
 }
 
@@ -123,25 +123,25 @@ func TestJavaClientLog3(t *testing.T) {
 		Verb: "list",
 		Object: RbacResource{
 			Group: "",
-			Kind: "namespaces",
+			Kind:  "namespaces",
 		},
 		ObjectNS: "",
 	}
-	got := FindRecord(log,"ba", "ba")
+	got := FindRbacEntry(log, "ba", "ba")
 	require.Equal(t, want, got)
 }
 
 func TestJavaClientLog4(t *testing.T) {
 	log := "dsfforbidden: User \"system:serviceaccount:default:my-svc-account\" cannot get deployments.extensions in the namespace \"default\"sf"
 	want := RbacEntry{}
-	got := FindRecord(log,"not-there", "non-existent")
+	got := FindRbacEntry(log, "not-there", "non-existent")
 	require.Equal(t, want, got)
 }
 
 func TestJavaClientLog5(t *testing.T) {
 	log := "dsfforbidden: User \"system:serviceaccount:default:my-svc-account\" cannot yada get deployments.extensions in the namespace \"default\"sf"
 	want := RbacEntry{}
-	got := FindRecord(log,"default", "my-svc-account")
+	got := FindRbacEntry(log, "default", "my-svc-account")
 	require.Equal(t, want, got)
 }
 
@@ -151,10 +151,10 @@ func TestOtherLog1(t *testing.T) {
 		Verb: "get",
 		Object: RbacResource{
 			Group: "",
-			Kind: "services",
+			Kind:  "services",
 		},
 		ObjectNS: "mycomp-services-process",
 	}
-	got := FindRecord(log,"mycomp-services-process", "default")
+	got := FindRbacEntry(log, "mycomp-services-process", "default")
 	require.Equal(t, want, got)
 }

@@ -27,19 +27,19 @@ import (
 
 type RbacResource struct {
 	Group string
-	Kind string
+	Kind  string
 }
 
 type RbacEntry struct {
-	Verb string
-	Object RbacResource
+	Verb     string
+	Object   RbacResource
 	ObjectNS string
 }
 
 const regexpTemplate = "User \"system:serviceaccount:%s:%s\" cannot (?P<Verb>\\S+) (resource )?\"?(?P<Kind>[^\"\\s]+)\"?" +
 	" (in API group \"(?P<ApiGroup>[^\"\\s]*)\" )?(at the cluster scope|in the namespace \"?(?P<Namespace>[^\"\\s]*)\"?)"
 
-func FindRecord(log string, subjectNS string, subject string) RbacEntry {
+func FindRbacEntry(log string, subjectNS string, subject string) RbacEntry {
 	re := fmt.Sprintf(regexpTemplate, subjectNS, subject)
 	r, err := regexp.Compile(re)
 	if err != nil {
@@ -58,7 +58,7 @@ func FindRecord(log string, subjectNS string, subject string) RbacEntry {
 		Verb: verb,
 		Object: RbacResource{
 			Group: apiGr,
-			Kind: kind,
+			Kind:  kind,
 		},
 		ObjectNS: ns,
 	}

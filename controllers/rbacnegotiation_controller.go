@@ -17,16 +17,9 @@ limitations under the License.
 package controllers
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"io"
 	"k8s.io/apimachinery/pkg/runtime"
-	"strings"
-
-	apps "k8s.io/api/apps/v1"
-	core "k8s.io/api/core/v1"
-	"k8s.io/client-go/kubernetes"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -38,8 +31,8 @@ import (
 // RbacNegotiationReconciler reconciles a RbacNegotiation object
 type RbacNegotiationReconciler struct {
 	client.Client
-	clientset *kubernetes.Clientset
-	Scheme    *runtime.Scheme
+	handler *RbacEventHandler
+	Scheme  *runtime.Scheme
 }
 
 //+kubebuilder:rbac:groups=kremser.dev,resources=rbacnegotiations,verbs=get;list;watch;create;update;patch;delete
@@ -51,10 +44,6 @@ type RbacNegotiationReconciler struct {
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
-// TODO(user): Modify the Reconcile function to compare the state specified by
-// the RbacNegotiation object against the actual cluster state, and then
-// perform operations to make the cluster state reflect the state specified by
-// the user.
 //
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.10.0/pkg/reconcile
@@ -70,82 +59,16 @@ func (r *RbacNegotiationReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 	log.Log.Info(fmt.Sprintf("New rbac negotiation event: for kind=%s and name=%s", rbacNeg.Spec.For.Kind, rbacNeg.Spec.For.Name))
-	r.handleResource(ctx, rbacNeg.Spec.For)
+	r.handler.handleResource(ctx, rbacNeg.Spec.For)
 	return ctrl.Result{}, nil
-}
-
-func (r *RbacNegotiationReconciler) handleResource(ctx context.Context, resource kremserv1.ForSpec) {
-	logs, sa, err := r.logsFromFirstPod(ctx, resource)
-	if err != nil {
-		log.Log.Error(err, "Unable to get logs from underlying pod")
-	}
-	//if logs.contain that string edit the role to contain that exception and restart the pod
-	missingRbacEntry := FindRecord(logs, resource.Namespace, sa)
-	addMissingRbacEntry(sa, missingRbacEntry)
-	
-	// make this optional
-	//restartPods()
-	log.Log.Info("%#v", missingRbacEntry)
-}
-
-func addMissingRbacEntry(sa string, entry RbacEntry) {
-	
-}
-
-func (r *RbacNegotiationReconciler) logsFromFirstPod(ctx context.Context, resource kremserv1.ForSpec) (string, string, error) {
-	var selector map[string]string
-	var sa string
-	switch strings.ToLower(resource.Kind) {
-	case "deploy", "deployment", "deployments":
-		nsName := client.ObjectKey{
-			Namespace: resource.Namespace,
-			Name:      resource.Name,
-		}
-		dep := apps.Deployment{}
-		if err := r.Client.Get(ctx, nsName, &dep); err != nil {
-			return "", "", err
-		}
-		selector = dep.Spec.Selector.MatchLabels
-		sa = dep.Spec.Template.Spec.ServiceAccountName
-	default:
-		return "", "", fmt.Errorf("unrecognized kind: '%s'", resource.Kind)
-	}
-
-	var podList core.PodList
-	if err := r.Client.List(ctx, &podList, client.InNamespace(resource.Namespace), client.MatchingLabels(selector)); err != nil {
-		return "", "", err
-	}
-	pods := podList.Items
-	if len(pods) == 0 {
-		return "", "", fmt.Errorf("no pods found for %s called '%s'", resource.Kind, resource.Name)
-	}
-	podName := pods[0].GetName()
-	req := r.ClientSet().CoreV1().Pods(resource.Namespace).GetLogs(podName, &core.PodLogOptions{})
-	podLogs, err := req.Stream(ctx)
-	if err != nil {
-		return "", "", err
-	}
-	defer podLogs.Close()
-
-	buf := new(bytes.Buffer)
-	_, err = io.Copy(buf, podLogs)
-	if err != nil {
-		return "", "", err
-	}
-	str := buf.String()
-
-	return str, sa, nil
-}
-
-func (r *RbacNegotiationReconciler) ClientSet() *kubernetes.Clientset {
-	if r.clientset == nil {
-		r.clientset = SetupK8sClient()
-	}
-	return r.clientset
 }
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *RbacNegotiationReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	r.handler = &RbacEventHandler{
+		Client:    r.Client,
+		clientset: SetupK8sClient(),
+	}
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&kremserv1.RbacNegotiation{}).
 		Complete(r)
