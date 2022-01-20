@@ -28,6 +28,7 @@ import (
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	rbac "k8s.io/api/rbac/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -51,13 +52,18 @@ func (r *RbacEventHandler) handleResource(ctx context.Context, resource kremserv
 	appInfo, err := r.getAppInfo(ctx, resource.For)
 	if err != nil {
 		log.Log.Error(err, "Unable to get logs from underlying pod")
+		return ctrl.Result{
+			Requeue:      true,
+			RequeueAfter: 30 * time.Second, // todo: configurable using env var
+		}
 	}
+
 	//if logs.contain that string edit the role to contain that exception and restart the pod
 	missingRbacEntry := FindRbacEntry(appInfo.log, resource.For.Namespace, appInfo.serviceAccount)
 	// todo: update status sub-resource on the cr
 	if missingRbacEntry != nil {
 		log.Log.Info(fmt.Sprintf("Rbac entry: %#v", missingRbacEntry))
-		err := r.addMissingRbacEntry(ctx, appInfo.serviceAccount, missingRbacEntry, resource.Role)
+		err := r.addMissingRbacEntry(ctx, resource.For.Namespace, appInfo.serviceAccount, missingRbacEntry, resource.Role)
 		if err != nil {
 			log.Log.Error(err, "Unable to add missing rbac entry")
 			return ctrl.Result{
@@ -69,7 +75,7 @@ func (r *RbacEventHandler) handleResource(ctx context.Context, resource kremserv
 		r.restartPods(ctx, appInfo.livePods)
 		return ctrl.Result{
 			Requeue:      true,
-			RequeueAfter: 1 * time.Minute, // todo: configurable using env var
+			RequeueAfter: 20 * time.Second, // todo: configurable using env var
 		}
 	} else {
 		retryMinutes := 5
@@ -89,7 +95,7 @@ func (r *RbacEventHandler) restartPods(ctx context.Context, pods []core.Pod) {
 	}
 }
 
-func (r *RbacEventHandler) addMissingRbacEntry(ctx context.Context, sa string, entry *RbacEntry, role kremserv1.RoleSpec) error {
+func (r *RbacEventHandler) addMissingRbacEntry(ctx context.Context, ns string, sa string, entry *RbacEntry, role kremserv1.RoleSpec) error {
 	if role.IsClusterRole {
 		crol := rbac.ClusterRole{}
 		if err := r.Client.Get(ctx, client.ObjectKey{Name: role.Name}, &crol); err != nil {
@@ -98,13 +104,31 @@ func (r *RbacEventHandler) addMissingRbacEntry(ctx context.Context, sa string, e
 				return err
 			}
 
-			// create role
-			rol := &rbac.Role{
+			// create cluster role
+			rol := &rbac.ClusterRole{
 				Rules: []rbac.PolicyRule{rbacEntryToPolicyRule(entry)},
 			}
 			rol.SetName(role.Name)
 			if err := r.Client.Create(ctx, rol); err != nil {
-				log.Log.Error(err, "Unable to create role")
+				log.Log.Error(err, "Unable to create cluster role")
+				return err
+			}
+			rb := &rbac.ClusterRoleBinding{
+				Subjects: []rbac.Subject{
+					{
+						Kind:      "ServiceAccount",
+						Name:      sa,
+						Namespace: ns,
+					},
+				},
+				RoleRef: rbac.RoleRef{
+					Kind: "ClusterRole",
+					Name: role.Name,
+				},
+			}
+			rb.SetName(role.Name + "-binding")
+			if err := r.Client.Create(ctx, rb); err != nil && !errors.IsAlreadyExists(err) {
+				log.Log.Error(err, "Unable to create cluster role binding")
 				return err
 			}
 			return nil
@@ -122,13 +146,33 @@ func (r *RbacEventHandler) addMissingRbacEntry(ctx context.Context, sa string, e
 				return err
 			}
 
-			// create cluster role
-			rol := &rbac.ClusterRole{
+			// create role
+			rol := &rbac.Role{
 				Rules: []rbac.PolicyRule{rbacEntryToPolicyRule(entry)},
 			}
 			rol.SetName(role.Name)
+			rol.SetNamespace(ns)
 			if err := r.Client.Create(ctx, rol); err != nil {
-				log.Log.Error(err, "Unable to create cluster role")
+				log.Log.Error(err, "Unable to create role")
+				return err
+			}
+			rb := &rbac.RoleBinding{
+				Subjects: []rbac.Subject{
+					{
+						Kind:      "ServiceAccount",
+						Name:      sa,
+						Namespace: ns,
+					},
+				},
+				RoleRef: rbac.RoleRef{
+					Kind: "Role",
+					Name: role.Name,
+				},
+			}
+			rb.SetName(role.Name + "-binding")
+			rb.SetNamespace(ns)
+			if err := r.Client.Create(ctx, rb); err != nil && !errors.IsAlreadyExists(err) {
+				log.Log.Error(err, "Unable to create role binding")
 				return err
 			}
 			return nil

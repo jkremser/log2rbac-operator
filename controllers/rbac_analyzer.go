@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"regexp"
+	"strings"
 )
 
 //examples:
@@ -25,6 +26,12 @@ import (
 
 // rust
 
+// cache-client
+//k8gb-55985fb855-82zh4 k8gb E0120 15:14:03.625397       1 reflector.go:138] k8s.io/client-go@v0.22.2/tools/cache/reflector.go:167: Failed to watch *v1.Endpoints: unknown (get endpoints)
+//k8gb-55985fb855-82zh4 k8gb E0120 15:14:15.718384       1 reflector.go:138] k8s.io/client-go@v0.22.2/tools/cache/reflector.go:167: Failed to watch *v1beta1.Gslb: unknown (get gslbs.k8gb.absa.oss)
+//k8gb-55985fb855-82zh4 k8gb E0120 15:14:17.352672       1 reflector.go:138] k8s.io/client-go@v0.22.2/tools/cache/reflector.go:167: Failed to watch *endpoint.DNSEndpoint: unknown (get dnsendpoints.externaldns.k8s.io)
+//k8gb-55985fb855-82zh4 k8gb E0120 15:14:26.758227       1 reflector.go:138] k8s.io/client-go@v0.22.2/tools/cache/reflector.go:167: Failed to watch *v1beta1.Ingress: unknown (get ingresses.networking.k8s.io)
+
 type RbacResource struct {
 	Group string
 	Kind  string
@@ -36,18 +43,22 @@ type RbacEntry struct {
 	ObjectNS string
 }
 
-const regexpTemplate = "User \"system:serviceaccount:%s:%s\" cannot (?P<Verb>\\S+) (resource )?\"?(?P<Kind>[^\"\\s]+)\"?" +
+// clients
+const regexpTemplate1 = "User \"system:serviceaccount:%s:%s\" cannot (?P<Verb>\\S+) (resource )?\"?(?P<Kind>[^\"\\s]+)\"?" +
 	" (in API group \"(?P<ApiGroup>[^\"\\s]*)\" )?(at the cluster scope|in the namespace \"?(?P<Namespace>[^\"\\s]*)\"?)"
 
+// cache/reflector.go
+const regexpTemplate2 = " Failed to (?P<Verb>\\S+) \\*[^:]+: (\\S+) \\(get (?P<Kind>[^)]+)\\)"
+
 func FindRbacEntry(log string, subjectNS string, subject string) *RbacEntry {
-	re := fmt.Sprintf(regexpTemplate, subjectNS, subject)
+	re := fmt.Sprintf(regexpTemplate1, subjectNS, subject)
 	r, err := regexp.Compile(re)
 	if err != nil {
 		return nil
 	}
 	match := r.FindStringSubmatch(log)
 	if len(match) < 8 {
-		return nil
+		return findRbacEntryFallback(log)
 	}
 	verb := match[r.SubexpIndex("Verb")]
 	kind := match[r.SubexpIndex("Kind")]
@@ -61,5 +72,33 @@ func FindRbacEntry(log string, subjectNS string, subject string) *RbacEntry {
 			Kind:  kind,
 		},
 		ObjectNS: ns,
+	}
+}
+
+func findRbacEntryFallback(log string) *RbacEntry {
+	r, err := regexp.Compile(regexpTemplate2)
+	if err != nil {
+		return nil
+	}
+	match := r.FindStringSubmatch(log)
+	if len(match) < 3 {
+		return nil
+	}
+	verb := match[r.SubexpIndex("Verb")]
+	kind := match[r.SubexpIndex("Kind")]
+	apiGr := ""
+	if strings.Contains(kind, ".") {
+		chunks := strings.SplitN(kind, ".", 2)
+		kind = chunks[0]
+		apiGr = chunks[1]
+	}
+
+	return &RbacEntry{
+		Verb: verb,
+		Object: RbacResource{
+			Group: apiGr,
+			Kind:  kind,
+		},
+		ObjectNS: "",
 	}
 }

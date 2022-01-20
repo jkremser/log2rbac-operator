@@ -62,7 +62,7 @@ type RbacNegotiationStatus struct {
 // RbacNegotiation is the Schema for the rbacnegotiations API
 // +kubebuilder:printcolumn:name="kind",type=string,JSONPath=`.spec.for.kind`
 // +kubebuilder:printcolumn:name="name",type=string,JSONPath=`.spec.for.name`
-// +kubebuilder:printcolumn:name="role",type=string,JSONPath=`.spec.roleRef.Name`
+// +kubebuilder:printcolumn:name="role",type=string,JSONPath=`.spec.role.name`
 // +kubebuilder:printcolumn:name="status",type=string,JSONPath=`.spec.status.status`
 // +kubebuilder:resource:shortName={rn,rbacn}
 // +kubebuilder:pruning:PreserveUnknownFields
