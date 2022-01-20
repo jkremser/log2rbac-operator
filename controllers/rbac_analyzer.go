@@ -39,22 +39,22 @@ type RbacEntry struct {
 const regexpTemplate = "User \"system:serviceaccount:%s:%s\" cannot (?P<Verb>\\S+) (resource )?\"?(?P<Kind>[^\"\\s]+)\"?" +
 	" (in API group \"(?P<ApiGroup>[^\"\\s]*)\" )?(at the cluster scope|in the namespace \"?(?P<Namespace>[^\"\\s]*)\"?)"
 
-func FindRbacEntry(log string, subjectNS string, subject string) RbacEntry {
+func FindRbacEntry(log string, subjectNS string, subject string) *RbacEntry {
 	re := fmt.Sprintf(regexpTemplate, subjectNS, subject)
 	r, err := regexp.Compile(re)
 	if err != nil {
-		return RbacEntry{}
+		return nil
 	}
 	match := r.FindStringSubmatch(log)
 	if len(match) < 8 {
-		return RbacEntry{}
+		return nil
 	}
 	verb := match[r.SubexpIndex("Verb")]
 	kind := match[r.SubexpIndex("Kind")]
 	apiGr := match[r.SubexpIndex("ApiGroup")]
 	ns := match[r.SubexpIndex("Namespace")]
 
-	return RbacEntry{
+	return &RbacEntry{
 		Verb: verb,
 		Object: RbacResource{
 			Group: apiGr,

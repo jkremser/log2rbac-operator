@@ -7,3 +7,7 @@ spec:
     namespace: default
     kind: Deployment
     name: test-echo
+  role:
+    name: new-role
+    isClusterRole: true
+    createIfNotExist: true

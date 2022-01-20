@@ -53,6 +53,8 @@ spec:
             description: RbacNegotiationSpec defines the desired state of RbacNegotiation
             properties:
               for:
+                description: ForSpec identifies the application of which the logs
+                  will be used for RBAC negotiation
                 properties:
                   kind:
                     enum:
@@ -66,22 +68,17 @@ spec:
                 required:
                 - name
                 type: object
-              roleRef:
-                description: RoleRef contains information that points to the role
-                  being used
+              role:
+                description: RoleSpec identifies the role that would be updated by
+                  the operator
                 properties:
-                  apiGroup:
-                    description: APIGroup is the group for the resource being referenced
-                    type: string
-                  kind:
-                    description: Kind is the type of resource being referenced
-                    type: string
+                  createIfNotExist:
+                    type: boolean
+                  isClusterRole:
+                    type: boolean
                   name:
-                    description: Name is the name of resource being referenced
                     type: string
                 required:
-                - apiGroup
-                - kind
                 - name
                 type: object
             required:

@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"strings"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -58,9 +59,9 @@ func (r *RbacNegotiationReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		// resource is created in the future.
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
-	log.Log.Info(fmt.Sprintf("New rbac negotiation event: for kind=%s and name=%s", rbacNeg.Spec.For.Kind, rbacNeg.Spec.For.Name))
-	r.handler.handleResource(ctx, rbacNeg.Spec.For)
-	return ctrl.Result{}, nil
+	log.Log.Info(fmt.Sprintf("New rbac negotiation event: for %s '%s'", strings.ToLower(rbacNeg.Spec.For.Kind), rbacNeg.Spec.For.Name))
+	result := r.handler.handleResource(ctx, rbacNeg.Spec)
+	return result, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.

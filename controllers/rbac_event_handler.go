@@ -21,10 +21,13 @@ import (
 	"context"
 	"fmt"
 	"io"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"strings"
+	"time"
 
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
+	rbac "k8s.io/api/rbac/v1"
 	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -38,25 +41,116 @@ type RbacEventHandler struct {
 	clientset *kubernetes.Clientset
 }
 
-func (r *RbacEventHandler) handleResource(ctx context.Context, resource kremserv1.ForSpec) {
-	logs, sa, err := r.logsFromFirstPod(ctx, resource)
+type AppInfo struct {
+	serviceAccount string
+	log            string
+	livePods       []core.Pod
+}
+
+func (r *RbacEventHandler) handleResource(ctx context.Context, resource kremserv1.RbacNegotiationSpec) ctrl.Result {
+	appInfo, err := r.getAppInfo(ctx, resource.For)
 	if err != nil {
 		log.Log.Error(err, "Unable to get logs from underlying pod")
 	}
 	//if logs.contain that string edit the role to contain that exception and restart the pod
-	missingRbacEntry := FindRbacEntry(logs, resource.Namespace, sa)
-	r.addMissingRbacEntry(sa, missingRbacEntry)
-
-	// make this optional
-	//restartPods()
-	log.Log.Info(fmt.Sprintf("%#v", missingRbacEntry))
+	missingRbacEntry := FindRbacEntry(appInfo.log, resource.For.Namespace, appInfo.serviceAccount)
+	// todo: update status sub-resource on the cr
+	if missingRbacEntry != nil {
+		log.Log.Info(fmt.Sprintf("Rbac entry: %#v", missingRbacEntry))
+		err := r.addMissingRbacEntry(ctx, appInfo.serviceAccount, missingRbacEntry, resource.Role)
+		if err != nil {
+			log.Log.Error(err, "Unable to add missing rbac entry")
+			return ctrl.Result{
+				Requeue:      true,
+				RequeueAfter: 2 * time.Minute, // todo: configurable using env var
+			}
+		}
+		// todo: make this optional using env var, because pod is going to be restarted anyway, but exp backoff..
+		r.restartPods(ctx, appInfo.livePods)
+		return ctrl.Result{
+			Requeue:      true,
+			RequeueAfter: 1 * time.Minute, // todo: configurable using env var
+		}
+	} else {
+		retryMinutes := 5
+		log.Log.Info(fmt.Sprintf("No rbac related stuff has been found in the logs. Will try again in %d minutes..", retryMinutes))
+		return ctrl.Result{
+			Requeue:      true,
+			RequeueAfter: time.Duration(retryMinutes) * time.Minute, // todo: configurable using env var
+		}
+	}
 }
 
-func (r *RbacEventHandler) addMissingRbacEntry(sa string, entry RbacEntry) {
-
+func (r *RbacEventHandler) restartPods(ctx context.Context, pods []core.Pod) {
+	for _, pod := range pods {
+		if err := r.Client.Delete(ctx, &pod); err != nil {
+			log.Log.Error(err, fmt.Sprintf("Unable to restart pod: %s", pod.GetName()))
+		}
+	}
 }
 
-func (r *RbacEventHandler) logsFromFirstPod(ctx context.Context, resource kremserv1.ForSpec) (string, string, error) {
+func (r *RbacEventHandler) addMissingRbacEntry(ctx context.Context, sa string, entry *RbacEntry, role kremserv1.RoleSpec) error {
+	if role.IsClusterRole {
+		crol := rbac.ClusterRole{}
+		if err := r.Client.Get(ctx, client.ObjectKey{Name: role.Name}, &crol); err != nil {
+			if !role.CreateIfNotExist {
+				log.Log.Error(err, "Unable to read cluster role")
+				return err
+			}
+
+			// create role
+			rol := &rbac.Role{
+				Rules: []rbac.PolicyRule{rbacEntryToPolicyRule(entry)},
+			}
+			rol.SetName(role.Name)
+			if err := r.Client.Create(ctx, rol); err != nil {
+				log.Log.Error(err, "Unable to create role")
+				return err
+			}
+			return nil
+		}
+		// todo: consolidate the rules
+		crol.Rules = append(crol.Rules, rbacEntryToPolicyRule(entry))
+		if err := r.Client.Update(ctx, &crol); err != nil {
+			log.Log.Error(err, "Unable to update cluster role")
+		}
+	} else {
+		nrol := rbac.Role{}
+		if err := r.Client.Get(ctx, client.ObjectKey{Name: role.Name}, &nrol); err != nil {
+			if !role.CreateIfNotExist {
+				log.Log.Error(err, "Unable to read role")
+				return err
+			}
+
+			// create cluster role
+			rol := &rbac.ClusterRole{
+				Rules: []rbac.PolicyRule{rbacEntryToPolicyRule(entry)},
+			}
+			rol.SetName(role.Name)
+			if err := r.Client.Create(ctx, rol); err != nil {
+				log.Log.Error(err, "Unable to create cluster role")
+				return err
+			}
+			return nil
+		}
+		// todo: consolidate the rules
+		nrol.Rules = append(nrol.Rules, rbacEntryToPolicyRule(entry))
+		if err := r.Client.Update(ctx, &nrol); err != nil {
+			log.Log.Error(err, "Unable to update role")
+		}
+	}
+	return nil
+}
+
+func rbacEntryToPolicyRule(entry *RbacEntry) rbac.PolicyRule {
+	return rbac.PolicyRule{
+		APIGroups: []string{entry.Object.Group},
+		Verbs:     []string{entry.Verb},
+		Resources: []string{entry.Object.Kind},
+	}
+}
+
+func (r *RbacEventHandler) getAppInfo(ctx context.Context, resource kremserv1.ForSpec) (*AppInfo, error) {
 	var selector map[string]string
 	var sa string
 	switch strings.ToLower(resource.Kind) {
@@ -67,38 +161,38 @@ func (r *RbacEventHandler) logsFromFirstPod(ctx context.Context, resource kremse
 		}
 		dep := apps.Deployment{}
 		if err := r.Client.Get(ctx, deploymentNsName, &dep); err != nil {
-			return "", "", err
+			return nil, err
 		}
 		selector = dep.Spec.Selector.MatchLabels
 		sa = dep.Spec.Template.Spec.ServiceAccountName
 	default:
-		return "", "", fmt.Errorf("unrecognized kind: '%s'", resource.Kind)
+		return nil, fmt.Errorf("unrecognized kind: '%s'", resource.Kind)
 	}
 
 	var podList core.PodList
 	if err := r.Client.List(ctx, &podList, client.InNamespace(resource.Namespace), client.MatchingLabels(selector)); err != nil {
-		return "", "", err
+		return nil, err
 	}
 	pods := podList.Items
 	if len(pods) == 0 {
-		return "", "", fmt.Errorf("no pods found for %s called '%s'", resource.Kind, resource.Name)
+		return nil, fmt.Errorf("no pods found for %s called '%s'", resource.Kind, resource.Name)
 	}
 	podName := pods[0].GetName()
 	req := r.ClientSet().CoreV1().Pods(resource.Namespace).GetLogs(podName, &core.PodLogOptions{})
 	podLogs, err := req.Stream(ctx)
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 	defer podLogs.Close()
 
 	buf := new(bytes.Buffer)
 	_, err = io.Copy(buf, podLogs)
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 	str := buf.String()
 
-	return str, sa, nil
+	return &AppInfo{log: str, serviceAccount: sa, livePods: pods}, nil
 }
 
 func (r *RbacEventHandler) ClientSet() *kubernetes.Clientset {

@@ -17,13 +17,13 @@ limitations under the License.
 package v1
 
 import (
-	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+// ForSpec identifies the application of which the logs will be used for RBAC negotiation
 // +k8s:openapi-gen=true
 type ForSpec struct {
 	//+kubebuilder:validation:Enum={Deployment,ReplicaSet}
@@ -32,15 +32,22 @@ type ForSpec struct {
 	Namespace string `json:"namespace,omitempty"`
 }
 
+// RoleSpec identifies the role that would be updated by the operator
+// +k8s:openapi-gen=true
+type RoleSpec struct {
+	Name             string `json:"name"`
+	IsClusterRole    bool   `json:"isClusterRole,omitempty"`
+	CreateIfNotExist bool   `json:"createIfNotExist,omitempty"`
+}
+
 // RbacNegotiationSpec defines the desired state of RbacNegotiation
 // +k8s:openapi-gen=true
 type RbacNegotiationSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	For ForSpec `json:"for"`
-	// +kubebuilder:printcolumn
-	RoleRef rbacv1.RoleRef `json:"roleRef,omitempty"`
+	For  ForSpec  `json:"for"`
+	Role RoleSpec `json:"role,omitempty"`
 }
 
 // RbacNegotiationStatus defines the observed state of RbacNegotiation
