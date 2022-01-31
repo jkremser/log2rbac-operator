@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"strings"
 
@@ -32,8 +33,9 @@ import (
 // RbacNegotiationReconciler reconciles a RbacNegotiation object
 type RbacNegotiationReconciler struct {
 	client.Client
-	handler *RbacEventHandler
-	Scheme  *runtime.Scheme
+	handler  *RbacEventHandler
+	Scheme   *runtime.Scheme
+	Recorder record.EventRecorder
 }
 
 //+kubebuilder:rbac:groups=kremser.dev,resources=rbacnegotiations,verbs=get;list;watch;create;update;patch;delete
@@ -42,6 +44,7 @@ type RbacNegotiationReconciler struct {
 //+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch
 //+kubebuilder:rbac:groups="",resources=pods,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=rbac,resources={serviceaccounts,roles,clusterroles,rolebindings,clusterrolebindings},verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups="",resources=events,verbs=create;patch
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -60,7 +63,7 @@ func (r *RbacNegotiationReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 	log.Log.Info(fmt.Sprintf("New rbac negotiation event: for %s '%s'", strings.ToLower(rbacNeg.Spec.For.Kind), rbacNeg.Spec.For.Name))
-	result := r.handler.handleResource(ctx, rbacNeg.Spec)
+	result := r.handler.handleResource(ctx, rbacNeg)
 	return result, nil
 }
 
@@ -69,6 +72,7 @@ func (r *RbacNegotiationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	r.handler = &RbacEventHandler{
 		Client:    r.Client,
 		clientset: SetupK8sClient(),
+		Recorder:  r.Recorder,
 	}
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&kremserv1.RbacNegotiation{}).

@@ -21,6 +21,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"strings"
 	"time"
@@ -40,6 +41,7 @@ import (
 type RbacEventHandler struct {
 	client.Client
 	clientset *kubernetes.Clientset
+	Recorder  record.EventRecorder
 }
 
 type AppInfo struct {
@@ -48,8 +50,8 @@ type AppInfo struct {
 	livePods       []core.Pod
 }
 
-func (r *RbacEventHandler) handleResource(ctx context.Context, resource kremserv1.RbacNegotiationSpec) ctrl.Result {
-	appInfo, err := r.getAppInfo(ctx, resource.For)
+func (r *RbacEventHandler) handleResource(ctx context.Context, resource kremserv1.RbacNegotiation) ctrl.Result {
+	appInfo, err := r.getAppInfo(ctx, resource.Spec.For)
 	if err != nil {
 		log.Log.Error(err, "Unable to get logs from underlying pod")
 		return ctrl.Result{
@@ -59,11 +61,11 @@ func (r *RbacEventHandler) handleResource(ctx context.Context, resource kremserv
 	}
 
 	//if logs.contain that string edit the role to contain that exception and restart the pod
-	missingRbacEntry := FindRbacEntry(appInfo.log, resource.For.Namespace, appInfo.serviceAccount)
+	missingRbacEntry := FindRbacEntry(appInfo.log, resource.Spec.For.Namespace, appInfo.serviceAccount)
 	// todo: update status sub-resource on the cr
 	if missingRbacEntry != nil {
 		log.Log.Info(fmt.Sprintf("Rbac entry: %#v", missingRbacEntry))
-		err := r.addMissingRbacEntry(ctx, resource.For.Namespace, appInfo.serviceAccount, missingRbacEntry, resource.Role)
+		err := r.addMissingRbacEntry(ctx, resource.Spec.For.Namespace, appInfo.serviceAccount, missingRbacEntry, resource.Spec.Role)
 		if err != nil {
 			log.Log.Error(err, "Unable to add missing rbac entry")
 			return ctrl.Result{
@@ -71,6 +73,7 @@ func (r *RbacEventHandler) handleResource(ctx context.Context, resource kremserv
 				RequeueAfter: 2 * time.Minute, // todo: configurable using env var
 			}
 		}
+		r.emitEvent(ctx, resource, missingRbacEntry)
 		// todo: make this optional using env var, because pod is going to be restarted anyway, but exp backoff..
 		r.restartPods(ctx, appInfo.livePods)
 		return ctrl.Result{
@@ -244,4 +247,9 @@ func (r *RbacEventHandler) ClientSet() *kubernetes.Clientset {
 		r.clientset = SetupK8sClient()
 	}
 	return r.clientset
+}
+
+func (r *RbacEventHandler) emitEvent(ctx context.Context, resource kremserv1.RbacNegotiation, entry *RbacEntry) {
+	r.Recorder.Eventf(&resource, "Normal", "RbacEntryCreated", "New RBAC entry: "+
+		"role=%s, verb=%s, resource=%s, group=%s", resource.Spec.Role.Name, entry.Verb, entry.Object.Kind, entry.Object.Group)
 }

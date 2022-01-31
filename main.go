@@ -79,8 +79,9 @@ func main() {
 	}
 
 	if err = (&controllers.RbacNegotiationReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
+		Client:   mgr.GetClient(),
+		Scheme:   mgr.GetScheme(),
+		Recorder: mgr.GetEventRecorderFor("log2rbac"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "RbacNegotiation")
 		os.Exit(1)
