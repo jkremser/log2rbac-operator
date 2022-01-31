@@ -1,6 +1,9 @@
-[![License: MIT](https://img.shields.io/badge/License-Apache_2.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
+![CI](https://github.com/jkremser/log2rbac-operator/workflows/CI/badge.svg) 
 
-[comment]: <> ([![Build Status]&#40;https://github.com/jkremser/log2rbac-operator/workflows/build/badge.svg?branch=master&#41;]&#40;https://github.com/k8gb-io/log2rbac-operator/actions?query=workflow%3A%22Golang+lint+and+test%22+branch%3Amaster&#41;)
+[![GitHub release](https://img.shields.io/github/release/jkremser/log2rbac-operator/all.svg?style=flat-square)](https://github.com/jkremser/log2rbac-operator/releases) 
+[![Docker Pulls](https://img.shields.io/docker/pulls/jkremser/log2rbac-operator.svg)](https://hub.docker.com/r/jkremser/log2rbac-operator)
+[![Go Report Card](https://goreportcard.com/badge/github.com/jkremser/log2rbac-operator)](https://goreportcard.com/report/github.com/jkremser/log2rbac-operator)
+[![License: MIT](https://img.shields.io/badge/License-Apache_2.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
 
 # log2rbac-operator
 Kubernetes operator that helps you to set up the RBAC rules for your application. If requested, it scans the application's log files
