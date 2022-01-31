@@ -31,7 +31,7 @@ import (
 func TestGoClientLog1(t *testing.T) {
 	log := "Yada yada \n yada forbidden: User \"system:serviceaccount:log2rbac-operator-system:log2rbac-operator-controller-manager\"" +
 		" cannot list resource \"nodes\" in API group \"\" at the cluster scope. yada yada\n yada"
-	want := RbacEntry{
+	want := &RbacEntry{
 		Verb: "list",
 		Object: RbacResource{
 			Group: "",
@@ -46,7 +46,7 @@ func TestGoClientLog1(t *testing.T) {
 func TestGoClientLog2(t *testing.T) {
 	log := "forbidden: User \"system:serviceaccount:log2rbac-operator-system:log2rbac-operator-controller-manager\"" +
 		" cannot list resource \"configmaps\" in API group \"\" at the cluster scope. yada yada\n yada"
-	want := RbacEntry{
+	want := &RbacEntry{
 		Verb: "list",
 		Object: RbacResource{
 			Group: "",
@@ -62,7 +62,7 @@ func TestGoClientLog3(t *testing.T) {
 	log := "Yada yada \n yada forbidden: User" +
 		" \"system:serviceaccount:log2rbac-operator-system:log2rbac-operator-controller-manager\"" +
 		" cannot list resource \"clusterrolebindings\" in API group \"rbac.authorization.k8s.io\" at the cluster scope\n yada"
-	want := RbacEntry{
+	want := &RbacEntry{
 		Verb: "list",
 		Object: RbacResource{
 			Group: "rbac.authorization.k8s.io",
@@ -77,7 +77,7 @@ func TestGoClientLog3(t *testing.T) {
 func TestJavascriptClientLog1(t *testing.T) {
 	log := "Yada yada \n yada forbidden: User \"system:serviceaccount:foo:bar\" cannot list resource" +
 		" \"jobs\" in API group \"batch\" in the namespace \"default\" yada\n yada"
-	want := RbacEntry{
+	want := &RbacEntry{
 		Verb: "list",
 		Object: RbacResource{
 			Group: "batch",
@@ -91,7 +91,7 @@ func TestJavascriptClientLog1(t *testing.T) {
 
 func TestJavaClientLog1(t *testing.T) {
 	log := "Yada yada \n yada forbidden: User forbidden: User \"system:serviceaccount:staging:default\" cannot get pods in the namespace \"staging\""
-	want := RbacEntry{
+	want := &RbacEntry{
 		Verb: "get",
 		Object: RbacResource{
 			Group: "",
@@ -105,7 +105,7 @@ func TestJavaClientLog1(t *testing.T) {
 
 func TestJavaClientLog2(t *testing.T) {
 	log := "dsfforbidden: User \"system:serviceaccount:default:my-svc-account\" cannot get deployments.extensions in the namespace \"default\"ff"
-	want := RbacEntry{
+	want := &RbacEntry{
 		Verb: "get",
 		Object: RbacResource{
 			Group: "",
@@ -119,7 +119,7 @@ func TestJavaClientLog2(t *testing.T) {
 
 func TestJavaClientLog3(t *testing.T) {
 	log := "dsfforbidden: User \"system:serviceaccount:ba:ba\" cannot list resource \"namespaces\" in API group \"\" at the cluster scopeff"
-	want := RbacEntry{
+	want := &RbacEntry{
 		Verb: "list",
 		Object: RbacResource{
 			Group: "",
@@ -133,21 +133,21 @@ func TestJavaClientLog3(t *testing.T) {
 
 func TestJavaClientLog4(t *testing.T) {
 	log := "dsfforbidden: User \"system:serviceaccount:default:my-svc-account\" cannot get deployments.extensions in the namespace \"default\"sf"
-	want := RbacEntry{}
+	var want *RbacEntry = nil
 	got := FindRbacEntry(log, "not-there", "non-existent")
 	require.Equal(t, want, got)
 }
 
 func TestJavaClientLog5(t *testing.T) {
 	log := "dsfforbidden: User \"system:serviceaccount:default:my-svc-account\" cannot yada get deployments.extensions in the namespace \"default\"sf"
-	want := RbacEntry{}
+	var want *RbacEntry = nil
 	got := FindRbacEntry(log, "default", "my-svc-account")
 	require.Equal(t, want, got)
 }
 
 func TestOtherLog1(t *testing.T) {
 	log := "uuuu User \"system:serviceaccount:mycomp-services-process:default\" cannot get services in the namespace \"mycomp-services-process\""
-	want := RbacEntry{
+	want := &RbacEntry{
 		Verb: "get",
 		Object: RbacResource{
 			Group: "",

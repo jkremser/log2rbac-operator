@@ -1,0 +1,33 @@
+name: Golang lint, golic, gokart and test
+on:
+  push:
+    paths-ignore:
+      - '**.md'
+  pull_request:
+    branches:
+      - master
+    paths-ignore:
+      - '**.md'
+jobs:
+  go-inspect:
+    name: Inspect packages
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      # see: https://golangci-lint.run/usage/configuration/#config-file
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v2.5.2
+        with:
+          version: v1.42.1
+      - name: golic
+        run: |
+          go install github.com/AbsaOSS/golic@v0.7.2
+          golic inject --dry -x -t apache2
+      - name: gokart
+        run: |
+          go install github.com/praetorian-inc/gokart@v0.2.0
+          gokart scan --globalsTainted
+      - name: go test
+        run: |
+          go get -u github.com/rakyll/gotest
+          gotest ./...
