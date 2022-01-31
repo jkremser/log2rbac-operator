@@ -11,6 +11,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
+// SetupK8sClient returns the configured kubernetes client, it checks if it's running from the k8s context or not
+// and use the correct method to initialize the client from the context
 func SetupK8sClient() *kubernetes.Clientset {
 	_ = log.FromContext(context.Background())
 	var config *rest.Config

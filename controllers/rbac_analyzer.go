@@ -32,11 +32,13 @@ import (
 //k8gb-55985fb855-82zh4 k8gb E0120 15:14:17.352672       1 reflector.go:138] k8s.io/client-go@v0.22.2/tools/cache/reflector.go:167: Failed to watch *endpoint.DNSEndpoint: unknown (get dnsendpoints.externaldns.k8s.io)
 //k8gb-55985fb855-82zh4 k8gb E0120 15:14:26.758227       1 reflector.go:138] k8s.io/client-go@v0.22.2/tools/cache/reflector.go:167: Failed to watch *v1beta1.Ingress: unknown (get ingresses.networking.k8s.io)
 
+// RbacResource identifies the object of the RBAC triplet (example: apps/Deployment)
 type RbacResource struct {
 	Group string
 	Kind  string
 }
 
+// RbacEntry holds the information about identified rbac entries that has been found in the logs
 type RbacEntry struct {
 	Verb     string
 	Object   RbacResource
@@ -50,6 +52,7 @@ const regexpTemplate1 = "User \"system:serviceaccount:%s:%s\" cannot (?P<Verb>\\
 // cache/reflector.go
 const regexpTemplate2 = " Failed to (?P<Verb>\\S+) \\*[^:]+: (\\S+) \\(get (?P<Kind>[^)]+)\\)"
 
+// FindRbacEntry returns the RbacEntry if it was found in the log for given subject and namespace or nil otherwise
 func FindRbacEntry(log string, subjectNS string, subject string) *RbacEntry {
 	re := fmt.Sprintf(regexpTemplate1, subjectNS, subject)
 	r, err := regexp.Compile(re)

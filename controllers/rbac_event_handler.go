@@ -44,6 +44,7 @@ type RbacEventHandler struct {
 	Recorder  record.EventRecorder
 }
 
+// AppInfo bundles the application specific information including logs, service account and list of live pods
 type AppInfo struct {
 	serviceAccount string
 	log            string
@@ -80,13 +81,12 @@ func (r *RbacEventHandler) handleResource(ctx context.Context, resource kremserv
 			Requeue:      true,
 			RequeueAfter: 20 * time.Second, // todo: configurable using env var
 		}
-	} else {
-		retryMinutes := 5
-		log.Log.Info(fmt.Sprintf("No rbac related stuff has been found in the logs. Will try again in %d minutes..", retryMinutes))
-		return ctrl.Result{
-			Requeue:      true,
-			RequeueAfter: time.Duration(retryMinutes) * time.Minute, // todo: configurable using env var
-		}
+	}
+	retryMinutes := 5
+	log.Log.Info(fmt.Sprintf("No rbac related stuff has been found in the logs. Will try again in %d minutes..", retryMinutes))
+	return ctrl.Result{
+		Requeue:      true,
+		RequeueAfter: time.Duration(retryMinutes) * time.Minute, // todo: configurable using env var
 	}
 }
 
@@ -242,6 +242,7 @@ func (r *RbacEventHandler) getAppInfo(ctx context.Context, resource kremserv1.Fo
 	return &AppInfo{log: str, serviceAccount: sa, livePods: pods}, nil
 }
 
+// ClientSet returns the k8s client
 func (r *RbacEventHandler) ClientSet() *kubernetes.Clientset {
 	if r.clientset == nil {
 		r.clientset = SetupK8sClient()
