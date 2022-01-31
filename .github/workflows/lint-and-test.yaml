@@ -26,4 +26,5 @@ jobs:
       - name: go test
         run: |
           go get -u github.com/rakyll/gotest
+          make generate
           gotest ./...
