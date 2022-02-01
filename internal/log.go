@@ -1,44 +1,40 @@
 package internal
 
 import (
+	"flag"
+	"fmt"
 	"github.com/fatih/color"
-	"github.com/go-logr/logr"
-	"github.com/prometheus/common/log"
+	"go.uber.org/zap/zapcore"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 )
 
-type OwnLog struct {
-	logr.Logger
+func SetupLog() {
+	var opts zap.Options
+	zap.UseDevMode(true)(&opts)
+	zap.ConsoleEncoder(func(c *zapcore.EncoderConfig) {
+		c.EncodeTime = zapcore.TimeEncoderOfLayout("01-02 15:04:05")
+		c.EncodeLevel = zapcore.CapitalColorLevelEncoder
+	})(&opts)
+	opts.BindFlags(flag.CommandLine)
+	flag.Parse()
+	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 }
 
-const (
-	err   = 3
-	warn  = 2
-	info  = 1
-	debug = 0
-)
-
-func Wrap(log logr.Logger) OwnLog {
-	return OwnLog{
-		log,
+func PrintBanner() {
+	c1 := color.FgCyan
+	c2 := color.FgHiWhite
+	c3 := color.FgBlue
+	pad := "     " + "     " + "     " + "     " + "     "
+	lines := []string{
+		pad + color.New(c1).Sprintf(" _             ") + color.New(c2).Sprintf("____       ") + color.New(c3).Sprintf("_"),
+		pad + color.New(c1).Sprintf("| | ___   __ _") + color.New(c2).Sprintf("|___ \\") + color.New(c3).Sprintf(" _ __| |__   __ _  ___"),
+		pad + color.New(c1).Sprintf("| |/ _ \\ / _` | ") + color.New(c2).Sprintf("__) ") + color.New(c3).Sprintf("| '__| '_ \\ / _` |/ __|"),
+		pad + color.New(c1).Sprintf("| | (_) | (_| |") + color.New(c2).Sprintf("/ __/") + color.New(c3).Sprintf("| |  | |_) | (_| | (__"),
+		pad + color.New(c1).Sprintf("|_|\\___/ \\__, ") + color.New(c2).Sprintf("|_____") + color.New(c3).Sprintf("|_|  |_.__/ \\__,_|\\___|"),
+		pad + color.New(c1).Sprintf("         |___/"),
 	}
-}
-
-func Errorf(format string, args ...interface{}) {
-	msgf(err, format, args...)
-}
-
-func msgf(severity int, format string, args ...interface{}) {
-	switch severity {
-	case info:
-		log.Infof(format, args...)
-	case debug:
-		log.Debugf(format, args...)
-	case warn:
-		log.Warnf(format, args...)
-	case err:
-		color.Red("Prints text in cyan.")
-		log.Errorf(format, args...)
-	default:
-		msgf(info, format, args...)
+	for _, line := range lines {
+		fmt.Println(line)
 	}
 }

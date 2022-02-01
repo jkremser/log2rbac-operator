@@ -18,21 +18,19 @@ package main
 
 import (
 	"flag"
-	"go.uber.org/zap/zapcore"
 	"os"
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
+	kremserv1 "jkremser/log2rbac-operator/api/v1"
+	"jkremser/log2rbac-operator/controllers"
+	"jkremser/log2rbac-operator/internal"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
-	"sigs.k8s.io/controller-runtime/pkg/log/zap"
-
-	kremserv1 "jkremser/log2rbac-operator/api/v1"
-	"jkremser/log2rbac-operator/controllers"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -57,15 +55,7 @@ func main() {
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
-	var opts zap.Options
-	zap.UseDevMode(true)(&opts)
-	zap.ConsoleEncoder(func(c *zapcore.EncoderConfig) {
-		c.EncodeTime = zapcore.TimeEncoderOfLayout("01-02 15:04:05")
-		c.EncodeLevel = zapcore.CapitalColorLevelEncoder
-	})(&opts)
-	opts.BindFlags(flag.CommandLine)
-	flag.Parse()
-	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
+	internal.SetupLog()
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
@@ -100,6 +90,7 @@ func main() {
 	}
 
 	setupLog.Info("starting manager")
+	internal.PrintBanner()
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
