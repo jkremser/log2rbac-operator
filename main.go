@@ -18,8 +18,8 @@ package main
 
 import (
 	"flag"
+	"go.uber.org/zap/zapcore"
 	"os"
-
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -57,12 +57,14 @@ func main() {
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
-	opts := zap.Options{
-		Development: true,
-	}
+	var opts zap.Options
+	zap.UseDevMode(true)(&opts)
+	zap.ConsoleEncoder(func(c *zapcore.EncoderConfig) {
+		c.EncodeTime = zapcore.TimeEncoderOfLayout("01-02 15:04:05")
+		c.EncodeLevel = zapcore.CapitalColorLevelEncoder
+	})(&opts)
 	opts.BindFlags(flag.CommandLine)
 	flag.Parse()
-
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
