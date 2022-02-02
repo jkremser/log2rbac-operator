@@ -23,8 +23,15 @@ import (
 //forbidden: User "system:serviceaccount:badefault" cannot list resource "namespaces" in API group "" at the cluster scope
 
 // python
+//message":"pods is forbidden: User "system:serviceaccount:citicai:default" cannot list pods at the cluster scope","reason":"Forbidden","
+//forbidden: User \"system:serviceaccount:default:default\" cannot get resource \"v1\" in API group \"\" at the cluster scope","reason":"Forbidden"
+// HTTP response body: {"kind":"Status","apiVersion":"v1","metadata":{},"status":"Failure","message":"pods \"pony-job-gmji0i3o-gmji0i3owc\" is forbidden: User \"system:serviceaccount:spark-dev:spark\" cannot get pods/status in the namespace \"spark-dev\"",
 
 // rust
+
+// other
+//User "system:serviceaccount:mycomp-services-process:default" cannot get services in the namespace "mycomp-services-process"
+
 
 // cache-client
 //k8gb-55985fb855-82zh4 k8gb E0120 15:14:03.625397       1 reflector.go:138] k8s.io/client-go@v0.22.2/tools/cache/reflector.go:167: Failed to watch *v1.Endpoints: unknown (get endpoints)
@@ -46,8 +53,8 @@ type RbacEntry struct {
 }
 
 // clients
-const regexpTemplate1 = "User \"system:serviceaccount:%s:%s\" cannot (?P<Verb>\\S+) (resource )?\"?(?P<Kind>[^\"\\s]+)\"?" +
-	" (in API group \"(?P<ApiGroup>[^\"\\s]*)\" )?(at the cluster scope|in the namespace \"?(?P<Namespace>[^\"\\s]*)\"?)"
+const regexpTemplate1 = "User \\\\?\"system:serviceaccount:%s:%s\\\\?\" cannot (?P<Verb>\\S+) (resource )?\\\\?\"?(?P<Kind>[^\"\\s\\\\]+)\\\\?\"?" +
+	" (in API group \\\\?\"(?P<ApiGroup>[^\"\\s\\\\]*)\\\\?\" )?(at the cluster scope|in the namespace \\\\?\"?(?P<Namespace>[^\"\\s\\\\]*)\\\\?\"?)"
 
 // cache/reflector.go
 const regexpTemplate2 = " Failed to (?P<Verb>\\S+) \\*[^:]+: (\\S+) \\(get (?P<Kind>[^)]+)\\)"
