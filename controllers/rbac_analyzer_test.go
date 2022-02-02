@@ -38,7 +38,6 @@ import (
 //k8gb-55985fb855-82zh4 k8gb E0120 15:14:17.352672       1 reflector.go:138] k8s.io/client-go@v0.22.2/tools/cache/reflector.go:167: Failed to watch *endpoint.DNSEndpoint: unknown (get dnsendpoints.externaldns.k8s.io)
 //k8gb-55985fb855-82zh4 k8gb E0120 15:14:26.758227       1 reflector.go:138] k8s.io/client-go@v0.22.2/tools/cache/reflector.go:167: Failed to watch *v1beta1.Ingress: unknown (get ingresses.networking.k8s.io)
 
-
 func TestGoClientLog1(t *testing.T) {
 	log := "Yada yada \n yada forbidden: User \"system:serviceaccount:log2rbac-operator-system:log2rbac-operator-controller-manager\"" +
 		" cannot list resource \"nodes\" in API group \"\" at the cluster scope. yada yada\n yada"

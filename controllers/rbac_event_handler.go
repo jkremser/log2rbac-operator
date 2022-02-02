@@ -21,6 +21,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"jkremser/log2rbac-operator/internal"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"strings"
@@ -42,6 +43,7 @@ type RbacEventHandler struct {
 	client.Client
 	clientset *kubernetes.Clientset
 	Recorder  record.EventRecorder
+	Config   *internal.Config
 }
 
 // AppInfo bundles the application specific information including logs, service account and list of live pods
@@ -57,7 +59,7 @@ func (r *RbacEventHandler) handleResource(ctx context.Context, resource kremserv
 		log.Log.Error(err, "Unable to get logs from underlying pod")
 		return ctrl.Result{
 			Requeue:      true,
-			RequeueAfter: 30 * time.Second, // todo: configurable using env var
+			RequeueAfter:  time.Duration(r.Config.Controller.SyncIntervalAfterNoLogsSeconds) * time.Second,
 		}
 	}
 
@@ -71,7 +73,7 @@ func (r *RbacEventHandler) handleResource(ctx context.Context, resource kremserv
 			log.Log.Error(err, "Unable to add missing rbac entry")
 			return ctrl.Result{
 				Requeue:      true,
-				RequeueAfter: 2 * time.Minute, // todo: configurable using env var
+				RequeueAfter: time.Duration(r.Config.Controller.SyncIntervalAfterErrorMinutes) * time.Minute,
 			}
 		}
 		r.emitEvent(ctx, resource, missingRbacEntry)
@@ -79,14 +81,14 @@ func (r *RbacEventHandler) handleResource(ctx context.Context, resource kremserv
 		r.restartPods(ctx, appInfo.livePods)
 		return ctrl.Result{
 			Requeue:      true,
-			RequeueAfter: 20 * time.Second, // todo: configurable using env var
+			RequeueAfter: time.Duration(r.Config.Controller.SyncIntervalAfterPodRestartSeconds) * time.Second,
 		}
 	}
-	retryMinutes := 5
+	retryMinutes := r.Config.Controller.SyncIntervalAfterNoRbacEntryMinutes
 	log.Log.Info(fmt.Sprintf("No rbac related stuff has been found in the logs. Will try again in %d minutes..", retryMinutes))
 	return ctrl.Result{
 		Requeue:      true,
-		RequeueAfter: time.Duration(retryMinutes) * time.Minute, // todo: configurable using env var
+		RequeueAfter: time.Duration(retryMinutes) * time.Minute,
 	}
 }
 

@@ -9,22 +9,33 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 )
 
-func SetupLog() {
+// SetupLog tweak the default log to use custom time format and use colors if supported
+func SetupLog(cfg *LogConfig) {
 	var opts zap.Options
 	zap.UseDevMode(true)(&opts)
 	zap.ConsoleEncoder(func(c *zapcore.EncoderConfig) {
 		c.EncodeTime = zapcore.TimeEncoderOfLayout("01-02 15:04:05")
-		c.EncodeLevel = zapcore.CapitalColorLevelEncoder
+		if cfg.Colors {
+			c.EncodeLevel = zapcore.CapitalColorLevelEncoder
+		}
 	})(&opts)
 	opts.BindFlags(flag.CommandLine)
 	flag.Parse()
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 }
 
-func PrintBanner() {
-	c1 := color.FgCyan
-	c2 := color.FgHiWhite
-	c3 := color.FgBlue
+// PrintBanner prints the ascii banner for log2rbac app in logs
+// the fatih/color module should be smart enough to recognize the attached
+// stdout's file descriptor if it's capable of colors, but we can explicitly control this
+// by cfg.Colors bool
+func PrintBanner(cfg *LogConfig) {
+	if cfg.NoBanner {
+		return
+	}
+	c1, c2, c3 := color.FgCyan, color.FgHiWhite, color.FgBlue
+	if !cfg.Colors {
+		c1, c2, c3 = color.Reset, color.Reset, color.Reset
+	}
 	pad := "     " + "     " + "     " + "     " + "     "
 	lines := []string{
 		pad + color.New(c1).Sprintf(" _             ") + color.New(c2).Sprintf("____       ") + color.New(c3).Sprintf("_"),

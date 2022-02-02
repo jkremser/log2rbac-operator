@@ -19,6 +19,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"jkremser/log2rbac-operator/internal"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -35,6 +36,7 @@ type RbacNegotiationReconciler struct {
 	client.Client
 	handler  *RbacEventHandler
 	Scheme   *runtime.Scheme
+	Config   *internal.Config
 	Recorder record.EventRecorder
 }
 
@@ -73,6 +75,7 @@ func (r *RbacNegotiationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Client:    r.Client,
 		clientset: SetupK8sClient(),
 		Recorder:  r.Recorder,
+		Config: r.Config,
 	}
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&kremserv1.RbacNegotiation{}).

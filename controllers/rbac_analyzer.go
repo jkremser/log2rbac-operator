@@ -32,7 +32,6 @@ import (
 // other
 //User "system:serviceaccount:mycomp-services-process:default" cannot get services in the namespace "mycomp-services-process"
 
-
 // cache-client
 //k8gb-55985fb855-82zh4 k8gb E0120 15:14:03.625397       1 reflector.go:138] k8s.io/client-go@v0.22.2/tools/cache/reflector.go:167: Failed to watch *v1.Endpoints: unknown (get endpoints)
 //k8gb-55985fb855-82zh4 k8gb E0120 15:14:15.718384       1 reflector.go:138] k8s.io/client-go@v0.22.2/tools/cache/reflector.go:167: Failed to watch *v1beta1.Gslb: unknown (get gslbs.k8gb.absa.oss)

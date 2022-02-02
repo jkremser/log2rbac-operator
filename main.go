@@ -17,12 +17,14 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"os"
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
+	"github.com/sethvargo/go-envconfig"
 	kremserv1 "jkremser/log2rbac-operator/api/v1"
 	"jkremser/log2rbac-operator/controllers"
 	"jkremser/log2rbac-operator/internal"
@@ -55,7 +57,14 @@ func main() {
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
-	internal.SetupLog()
+
+	ctx := context.Background()
+	var cfg internal.Config
+	err := envconfig.Process(ctx, &cfg)
+	internal.SetupLog(cfg.Log)
+	if err != nil {
+
+	}
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
@@ -74,6 +83,7 @@ func main() {
 		Client:   mgr.GetClient(),
 		Scheme:   mgr.GetScheme(),
 		Recorder: mgr.GetEventRecorderFor("log2rbac"),
+		Config:   &cfg,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "RbacNegotiation")
 		os.Exit(1)
@@ -90,7 +100,7 @@ func main() {
 	}
 
 	setupLog.Info("starting manager")
-	internal.PrintBanner()
+	internal.PrintBanner(cfg.Log)
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
