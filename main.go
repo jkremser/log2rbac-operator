@@ -63,7 +63,7 @@ func main() {
 	err := envconfig.Process(ctx, &cfg)
 	internal.SetupLog(cfg.Log)
 	if err != nil {
-
+		setupLog.Error(err, "unable to load config")
 	}
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{

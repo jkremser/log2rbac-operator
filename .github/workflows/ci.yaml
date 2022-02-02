@@ -17,14 +17,15 @@ jobs:
       - uses: actions/setup-go@v2
         with:
           go-version: '1.17.6'
-      - run: |
+      - name: Build
+        run: |
           go version
           make build
-      # see: https://golangci-lint.run/usage/configuration/#config-file
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v2.5.2
-        with:
-          version: v1.42.1
+#      # see: https://golangci-lint.run/usage/configuration/#config-file
+#      - name: Lint using golangci-lint
+#        uses: golangci/golangci-lint-action@v2.5.2
+#        with:
+#          version: v1.42.1
       - name: gokart
         run: |
           go install github.com/praetorian-inc/gokart@v0.2.0

@@ -77,8 +77,13 @@ func (r *RbacEventHandler) handleResource(ctx context.Context, resource kremserv
 			}
 		}
 		r.emitEvent(ctx, resource, missingRbacEntry)
-		// todo: make this optional using env var, because pod is going to be restarted anyway, but exp backoff..
-		r.restartPods(ctx, appInfo.livePods)
+		tryAgainInSeconds := r.Config.Controller.SyncIntervalAfterPodRestartSeconds
+		if r.Config.Controller.ShouldRestartAppPods {
+			r.restartPods(ctx, appInfo.livePods)
+		} else {
+			// pod is going to be restarted anyway, but exp backoff can make this quite a long process
+			tryAgainInSeconds *= 4
+		}
 		return ctrl.Result{
 			Requeue:      true,
 			RequeueAfter: time.Duration(r.Config.Controller.SyncIntervalAfterPodRestartSeconds) * time.Second,
