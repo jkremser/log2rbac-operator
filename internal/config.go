@@ -20,5 +20,5 @@ type ControllerConfig struct {
 	SyncIntervalAfterPodRestartSeconds  int `env:"SYNC_INTERVAL_AFTER_POD_RESTART_SECONDS,default=20"`
 	SyncIntervalAfterErrorMinutes       int `env:"SYNC_INTERVAL_AFTER_ERROR,default=3"`
 
-	ShouldRestartAppPods                bool `env:"SHOULD_RESTART_APP_PODS,default=true"`
+	ShouldRestartAppPods bool `env:"SHOULD_RESTART_APP_PODS,default=true"`
 }

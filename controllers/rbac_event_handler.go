@@ -22,12 +22,12 @@ import (
 	"fmt"
 	"io"
 	"jkremser/log2rbac-operator/internal"
+	apps "k8s.io/api/apps/v1"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"strings"
 	"time"
 
-	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	rbac "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -43,7 +43,7 @@ type RbacEventHandler struct {
 	client.Client
 	clientset *kubernetes.Clientset
 	Recorder  record.EventRecorder
-	Config   *internal.Config
+	Config    *internal.Config
 }
 
 // AppInfo bundles the application specific information including logs, service account and list of live pods
@@ -56,10 +56,10 @@ type AppInfo struct {
 func (r *RbacEventHandler) handleResource(ctx context.Context, resource kremserv1.RbacNegotiation) ctrl.Result {
 	appInfo, err := r.getAppInfo(ctx, resource.Spec.For)
 	if err != nil {
-		log.Log.Error(err, "Unable to get logs from underlying pod")
+		log.Log.Error(err, "Unable to get logs from underlying pod. Check the ReplicaSet (k describe) if the service account isn't missing.")
 		return ctrl.Result{
 			Requeue:      true,
-			RequeueAfter:  time.Duration(r.Config.Controller.SyncIntervalAfterNoLogsSeconds) * time.Second,
+			RequeueAfter: time.Duration(r.Config.Controller.SyncIntervalAfterNoLogsSeconds) * time.Second,
 		}
 	}
 
@@ -187,7 +187,6 @@ func (r *RbacEventHandler) addMissingRbacEntry(ctx context.Context, ns string, s
 			}
 			return nil
 		}
-		// todo: consolidate the rules
 		nrol.Rules = append(nrol.Rules, rbacEntryToPolicyRule(entry))
 		if err := r.Client.Update(ctx, &nrol); err != nil {
 			log.Log.Error(err, "Unable to update role")
@@ -205,24 +204,10 @@ func rbacEntryToPolicyRule(entry *RbacEntry) rbac.PolicyRule {
 }
 
 func (r *RbacEventHandler) getAppInfo(ctx context.Context, resource kremserv1.ForSpec) (*AppInfo, error) {
-	var selector map[string]string
-	var sa string
-	switch strings.ToLower(resource.Kind) {
-	case "deploy", "deployment", "deployments":
-		deploymentNsName := client.ObjectKey{
-			Namespace: resource.Namespace,
-			Name:      resource.Name,
-		}
-		dep := apps.Deployment{}
-		if err := r.Client.Get(ctx, deploymentNsName, &dep); err != nil {
-			return nil, err
-		}
-		selector = dep.Spec.Selector.MatchLabels
-		sa = dep.Spec.Template.Spec.ServiceAccountName
-	default:
-		return nil, fmt.Errorf("unrecognized kind: '%s'", resource.Kind)
+	selector, sa := r.getSelectorAndSA(ctx, resource)
+	if selector == nil {
+		return nil, fmt.Errorf("cannot get pod selector for resource %v", resource)
 	}
-
 	var podList core.PodList
 	if err := r.Client.List(ctx, &podList, client.InNamespace(resource.Namespace), client.MatchingLabels(selector)); err != nil {
 		return nil, err
@@ -247,6 +232,48 @@ func (r *RbacEventHandler) getAppInfo(ctx context.Context, resource kremserv1.Fo
 	str := buf.String()
 
 	return &AppInfo{log: str, serviceAccount: sa, livePods: pods}, nil
+}
+
+func (r *RbacEventHandler) getSelectorAndSA(ctx context.Context, resource kremserv1.ForSpec) (map[string]string, string) {
+	nsName := client.ObjectKey{
+		Namespace: resource.Namespace,
+		Name:      resource.Name,
+	}
+	switch strings.ToLower(resource.Kind) {
+	case "deploy", "deployment":
+		dep := apps.Deployment{}
+		return r.getObject(ctx, &dep, nsName)
+	case "rs", "replicaset":
+		rs := apps.ReplicaSet{}
+		return r.getObject(ctx, &rs, nsName)
+	case "ds", "daemonset":
+		ds := apps.DaemonSet{}
+		return r.getObject(ctx, &ds, nsName)
+	case "ss", "statefulset":
+		ss := apps.StatefulSet{}
+		return r.getObject(ctx, &ss, nsName)
+	default:
+		log.Log.Error(fmt.Errorf("unrecognized kind: '%s'", resource.Kind), "")
+		return nil, ""
+	}
+}
+
+func (r *RbacEventHandler) getObject(ctx context.Context, obj client.Object, nsName client.ObjectKey) (map[string]string, string) {
+	if err := r.Client.Get(ctx, nsName, obj); err != nil {
+		log.Log.Error(err, "Cannot get k8s object %s with name %v ", obj.GetObjectKind(), nsName)
+		return nil, ""
+	}
+	switch obj.(type) {
+	case *apps.Deployment:
+		return (obj.(*apps.Deployment)).Spec.Selector.MatchLabels, (obj.(*apps.Deployment)).Spec.Template.Spec.ServiceAccountName
+	case *apps.ReplicaSet:
+		return (obj.(*apps.ReplicaSet)).Spec.Selector.MatchLabels, (obj.(*apps.ReplicaSet)).Spec.Template.Spec.ServiceAccountName
+	case *apps.DaemonSet:
+		return (obj.(*apps.DaemonSet)).Spec.Selector.MatchLabels, (obj.(*apps.DaemonSet)).Spec.Template.Spec.ServiceAccountName
+	case *apps.StatefulSet:
+		return (obj.(*apps.StatefulSet)).Spec.Selector.MatchLabels, (obj.(*apps.StatefulSet)).Spec.Template.Spec.ServiceAccountName
+	}
+	return nil, ""
 }
 
 // ClientSet returns the k8s client

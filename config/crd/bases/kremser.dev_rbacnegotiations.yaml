@@ -59,12 +59,29 @@ spec:
                   kind:
                     enum:
                     - Deployment
+                    - deployment
+                    - deploy
                     - ReplicaSet
+                    - replicaset
+                    - rs
+                    - DaemonSet
+                    - daemonset
+                    - ds
+                    - StatefulSet
+                    - statefulset
+                    - ss
+                    - Service
+                    - service
+                    - svc
                     type: string
                   name:
                     type: string
                   namespace:
                     type: string
+                  podSelector:
+                    additionalProperties:
+                      type: string
+                    type: object
                 required:
                 - name
                 type: object

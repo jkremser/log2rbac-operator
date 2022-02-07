@@ -26,10 +26,12 @@ import (
 // ForSpec identifies the application of which the logs will be used for RBAC negotiation
 // +k8s:openapi-gen=true
 type ForSpec struct {
-	//+kubebuilder:validation:Enum={Deployment,ReplicaSet}
-	Kind      string `json:"kind,omitempty"`
-	Name      string `json:"name"`
-	Namespace string `json:"namespace,omitempty"`
+	//+kubebuilder:validation:Enum={Deployment,deployment,deploy,ReplicaSet,replicaset,rs,DaemonSet,daemonset,ds,StatefulSet,statefulset,ss,Service,service,svc}
+	Kind string `json:"kind,omitempty"`
+	// +optional
+	PodSelector map[string]string `json:"podSelector,omitempty"`
+	Name        string            `json:"name"`
+	Namespace   string            `json:"namespace,omitempty"`
 }
 
 // RoleSpec identifies the role that would be updated by the operator

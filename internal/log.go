@@ -21,6 +21,7 @@ func SetupLog(cfg *LogConfig) {
 	})(&opts)
 	opts.BindFlags(flag.CommandLine)
 	flag.Parse()
+	// todo: use wrapper and add the context that called the logger (https://stackoverflow.com/questions/61246838/zap-logger-source-line)
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 }
 

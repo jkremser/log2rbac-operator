@@ -75,7 +75,7 @@ func (r *RbacNegotiationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Client:    r.Client,
 		clientset: SetupK8sClient(),
 		Recorder:  r.Recorder,
-		Config: r.Config,
+		Config:    r.Config,
 	}
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&kremserv1.RbacNegotiation{}).
