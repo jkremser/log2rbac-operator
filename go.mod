@@ -1,4 +1,4 @@
-module jkremser/log2rbac-operator
+module github.com/jkremser/log2rbac-operator
 
 go 1.16
 
