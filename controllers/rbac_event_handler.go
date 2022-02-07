@@ -86,7 +86,7 @@ func (r *RbacEventHandler) handleResource(ctx context.Context, resource kremserv
 		}
 		return ctrl.Result{
 			Requeue:      true,
-			RequeueAfter: time.Duration(r.Config.Controller.SyncIntervalAfterPodRestartSeconds) * time.Second,
+			RequeueAfter: time.Duration(tryAgainInSeconds) * time.Second,
 		}
 	}
 	retryMinutes := r.Config.Controller.SyncIntervalAfterNoRbacEntryMinutes
