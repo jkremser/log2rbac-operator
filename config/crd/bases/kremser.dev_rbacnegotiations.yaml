@@ -81,6 +81,8 @@ spec:
                   podSelector:
                     additionalProperties:
                       type: string
+                    description: this can override the real pod selector that's associated
+                      for the deployment,rs,ds,ss or svc
                     type: object
                 required:
                 - name
@@ -98,6 +100,10 @@ spec:
                 required:
                 - name
                 type: object
+              serviceAccountName:
+                description: this can override the real service account that's specified
+                  in the deployment,rs,ds or ss
+                type: string
             required:
             - for
             type: object

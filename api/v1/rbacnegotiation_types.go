@@ -29,6 +29,7 @@ type ForSpec struct {
 	//+kubebuilder:validation:Enum={Deployment,deployment,deploy,ReplicaSet,replicaset,rs,DaemonSet,daemonset,ds,StatefulSet,statefulset,ss,Service,service,svc}
 	Kind string `json:"kind,omitempty"`
 	// +optional
+	// this can override the real pod selector that's associated for the deployment,rs,ds,ss or svc
 	PodSelector map[string]string `json:"podSelector,omitempty"`
 	Name        string            `json:"name"`
 	Namespace   string            `json:"namespace,omitempty"`
@@ -50,6 +51,9 @@ type RbacNegotiationSpec struct {
 
 	For  ForSpec  `json:"for"`
 	Role RoleSpec `json:"role,omitempty"`
+	// +optional This needs to be provided if .spec.for.kind == service
+	// this can override the real service account that's specified in the deployment,rs,ds or ss
+	ServiceAccountName string `json:"serviceAccountName,omitempty"`
 }
 
 // RbacNegotiationStatus defines the observed state of RbacNegotiation

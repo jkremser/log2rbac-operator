@@ -54,7 +54,7 @@ type AppInfo struct {
 }
 
 func (r *RbacEventHandler) handleResource(ctx context.Context, resource kremserv1.RbacNegotiation) ctrl.Result {
-	appInfo, err := r.getAppInfo(ctx, resource.Spec.For)
+	appInfo, err := r.getAppInfo(ctx, resource.Spec)
 	if err != nil {
 		log.Log.Error(err, "Unable to get logs from underlying pod. Check the ReplicaSet (k describe) if the service account isn't missing.")
 		return ctrl.Result{
@@ -203,21 +203,35 @@ func rbacEntryToPolicyRule(entry *RbacEntry) rbac.PolicyRule {
 	}
 }
 
-func (r *RbacEventHandler) getAppInfo(ctx context.Context, resource kremserv1.ForSpec) (*AppInfo, error) {
-	selector, sa := r.getSelectorAndSA(ctx, resource)
+func (r *RbacEventHandler) getAppInfo(ctx context.Context, resource kremserv1.RbacNegotiationSpec) (*AppInfo, error) {
+	forS := resource.For
+	var selector map[string]string
+	var sa string
+	if len(resource.ServiceAccountName) == 0 || len(forS.PodSelector) == 0 {
+		selector, sa = r.getSelectorAndSA(ctx, forS)
+	}
+	if len(resource.ServiceAccountName) > 0 {
+		sa = resource.ServiceAccountName
+	}
+	if len(forS.PodSelector) > 0 {
+		selector = forS.PodSelector
+	}
+	if len(sa) == 0 {
+		sa = "default"
+	}
 	if selector == nil {
 		return nil, fmt.Errorf("cannot get pod selector for resource %v", resource)
 	}
 	var podList core.PodList
-	if err := r.Client.List(ctx, &podList, client.InNamespace(resource.Namespace), client.MatchingLabels(selector)); err != nil {
+	if err := r.Client.List(ctx, &podList, client.InNamespace(forS.Namespace), client.MatchingLabels(selector)); err != nil {
 		return nil, err
 	}
 	pods := podList.Items
 	if len(pods) == 0 {
-		return nil, fmt.Errorf("no pods found for %s called '%s'", resource.Kind, resource.Name)
+		return nil, fmt.Errorf("no pods found for %s called '%s'", forS.Kind, forS.Name)
 	}
 	podName := pods[0].GetName()
-	req := r.ClientSet().CoreV1().Pods(resource.Namespace).GetLogs(podName, &core.PodLogOptions{})
+	req := r.ClientSet().CoreV1().Pods(forS.Namespace).GetLogs(podName, &core.PodLogOptions{})
 	podLogs, err := req.Stream(ctx)
 	if err != nil {
 		return nil, err
@@ -252,6 +266,9 @@ func (r *RbacEventHandler) getSelectorAndSA(ctx context.Context, resource kremse
 	case "ss", "statefulset":
 		ss := apps.StatefulSet{}
 		return r.getObject(ctx, &ss, nsName)
+	case "svc", "service":
+		svc := core.Service{}
+		return r.getObject(ctx, &svc, nsName)
 	default:
 		log.Log.Error(fmt.Errorf("unrecognized kind: '%s'", resource.Kind), "")
 		return nil, ""
@@ -272,7 +289,10 @@ func (r *RbacEventHandler) getObject(ctx context.Context, obj client.Object, nsN
 		return (obj.(*apps.DaemonSet)).Spec.Selector.MatchLabels, (obj.(*apps.DaemonSet)).Spec.Template.Spec.ServiceAccountName
 	case *apps.StatefulSet:
 		return (obj.(*apps.StatefulSet)).Spec.Selector.MatchLabels, (obj.(*apps.StatefulSet)).Spec.Template.Spec.ServiceAccountName
+	case *core.Service:
+		return (obj.(*core.Service)).Spec.Selector, ""
 	}
+
 	return nil, ""
 }
 
