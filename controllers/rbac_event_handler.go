@@ -20,8 +20,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/jkremser/log2rbac-operator/internal"
 	"io"
-	"jkremser/log2rbac-operator/internal"
 	apps "k8s.io/api/apps/v1"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -35,7 +35,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	kremserv1 "jkremser/log2rbac-operator/api/v1"
+	kremserv1 "github.com/jkremser/log2rbac-operator/api/v1"
 )
 
 // RbacEventHandler handles the CRUD event from CR

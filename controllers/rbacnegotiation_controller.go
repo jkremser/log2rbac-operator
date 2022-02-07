@@ -19,7 +19,7 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"jkremser/log2rbac-operator/internal"
+	"github.com/jkremser/log2rbac-operator/internal"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -28,7 +28,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	kremserv1 "jkremser/log2rbac-operator/api/v1"
+	kremserv1 "github.com/jkremser/log2rbac-operator/api/v1"
 )
 
 // RbacNegotiationReconciler reconciles a RbacNegotiation object
