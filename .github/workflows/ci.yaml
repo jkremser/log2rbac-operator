@@ -9,28 +9,42 @@ on:
     paths-ignore:
       - '**.md'
 jobs:
-  go-inspect:
-    name: Lint and Test
+  lint:
+    name: Lint
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
         with:
           go-version: '1.17.6'
-      - name: Build
-        run: |
-          go version
-          make build
-#      # see: https://golangci-lint.run/usage/configuration/#config-file
-#      - name: Lint using golangci-lint
-#        uses: golangci/golangci-lint-action@v2.5.2
-#        with:
-#          version: v1.42.1
+
+      # see: https://golangci-lint.run/usage/configuration/#config-file
+      - name: Lint using golangci-lint
+        uses: golangci/golangci-lint-action@v2.5.2
+        with:
+          version: v1.42.1
+
       - name: gokart
         run: |
           go install github.com/praetorian-inc/gokart@v0.2.0
           gokart scan --globalsTainted
-      - name: go test
+
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-20.04
+    needs: lint
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '1.17.6'
+
+      - name: Build
         run: |
-          go get -u github.com/rakyll/gotest
+          go version
+          make build
+
+      - name: Test
+        run: |
+          go install github.com/rakyll/gotest
           gotest ./...
