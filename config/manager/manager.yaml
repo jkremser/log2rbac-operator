@@ -2,27 +2,28 @@ apiVersion: v1
 kind: Namespace
 metadata:
   labels:
-    control-plane: controller-manager
-  name: system
+    control-plane: log2rbac
+  name: log2rbac
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: controller-manager
-  namespace: system
+  name: log2rbac
+  namespace: log2rbac
   labels:
-    control-plane: controller-manager
+    control-plane: log2rbac
 spec:
   selector:
     matchLabels:
-      control-plane: controller-manager
+      control-plane: log2rbac
   replicas: 1
   template:
     metadata:
       annotations:
         kubectl.kubernetes.io/default-container: manager
       labels:
-        control-plane: controller-manager
+        control-plane: log2rbac
+        id: log2rbac
     spec:
       securityContext:
         runAsNonRoot: true
@@ -56,5 +57,5 @@ spec:
           requests:
             cpu: 10m
             memory: 64Mi
-      serviceAccountName: controller-manager
+      serviceAccountName: log2rbac
       terminationGracePeriodSeconds: 10
