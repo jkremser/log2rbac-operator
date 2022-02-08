@@ -280,17 +280,14 @@ func (r *RbacEventHandler) getObject(ctx context.Context, obj client.Object, nsN
 		log.Log.Error(err, "Cannot get k8s object %s with name %v ", obj.GetObjectKind(), nsName)
 		return nil, ""
 	}
-	switch obj.(type) {
+	switch casted := obj.(type) {
 	case *apps.Deployment:
-		return (obj.(*apps.Deployment)).Spec.Selector.MatchLabels, (obj.(*apps.Deployment)).Spec.Template.Spec.ServiceAccountName
 	case *apps.ReplicaSet:
-		return (obj.(*apps.ReplicaSet)).Spec.Selector.MatchLabels, (obj.(*apps.ReplicaSet)).Spec.Template.Spec.ServiceAccountName
 	case *apps.DaemonSet:
-		return (obj.(*apps.DaemonSet)).Spec.Selector.MatchLabels, (obj.(*apps.DaemonSet)).Spec.Template.Spec.ServiceAccountName
 	case *apps.StatefulSet:
-		return (obj.(*apps.StatefulSet)).Spec.Selector.MatchLabels, (obj.(*apps.StatefulSet)).Spec.Template.Spec.ServiceAccountName
+		return casted.Spec.Selector.MatchLabels, casted.Spec.Template.Spec.ServiceAccountName
 	case *core.Service:
-		return (obj.(*core.Service)).Spec.Selector, ""
+		return casted.Spec.Selector, ""
 	}
 
 	return nil, ""
