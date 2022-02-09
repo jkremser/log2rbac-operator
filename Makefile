@@ -69,8 +69,8 @@ build: generate fmt vet ## Build log2rbac (manager) binary.
 run: manifests generate fmt vet ## Run a controller from your host.
 	go run ./main.go
 
-.PHONY: docker-build
-docker-build: test ## Build docker image with the manager.
+.PHONY: container-img-build
+container-img-build: test ## Build container image with the manager.
 	docker build -t ${IMG} .
 
 .PHONY: docker-push

@@ -67,7 +67,7 @@ jobs:
 
       - name: Build container image and import it to k3d
         run: |
-          make docker-build
+          make container-img-build
           k3d image import $IMG
 
       - name: Spawn k8s cluster
