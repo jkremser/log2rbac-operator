@@ -70,7 +70,7 @@ run: manifests generate fmt vet ## Run a controller from your host.
 	go run ./main.go
 
 .PHONY: container-img-build
-container-img-build: test ## Build container image with the manager.
+container-img-build: ## Build container image with the manager.
 	docker build -t ${IMG} .
 
 .PHONY: docker-push
