@@ -71,9 +71,10 @@ func (r *RbacNegotiationReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *RbacNegotiationReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	cl, _ := SetupK8sClient()
 	r.handler = &RbacEventHandler{
 		Client:    r.Client,
-		clientset: SetupK8sClient(),
+		clientset: cl,
 		Recorder:  r.Recorder,
 		Config:    r.Config,
 	}

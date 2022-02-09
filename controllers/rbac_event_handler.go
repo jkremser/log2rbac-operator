@@ -296,7 +296,7 @@ func (r *RbacEventHandler) getObject(ctx context.Context, obj client.Object, nsN
 // ClientSet returns the k8s client
 func (r *RbacEventHandler) ClientSet() *kubernetes.Clientset {
 	if r.clientset == nil {
-		r.clientset = SetupK8sClient()
+		r.clientset, _ = SetupK8sClient()
 	}
 	return r.clientset
 }

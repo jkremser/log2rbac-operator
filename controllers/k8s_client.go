@@ -13,7 +13,7 @@ import (
 
 // SetupK8sClient returns the configured kubernetes client, it checks if it's running from the k8s context or not
 // and use the correct method to initialize the client from the context
-func SetupK8sClient() *kubernetes.Clientset {
+func SetupK8sClient() (*kubernetes.Clientset, *rest.Config) {
 	_ = log.FromContext(context.Background())
 	var config *rest.Config
 	var err error
@@ -41,5 +41,5 @@ func SetupK8sClient() *kubernetes.Clientset {
 	if err != nil {
 		panic(err)
 	}
-	return clientset
+	return clientset, config
 }
