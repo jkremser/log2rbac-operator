@@ -8,6 +8,10 @@ on:
       - master
     paths-ignore:
       - '**.md'
+
+env:
+  IMG: candidate
+
 jobs:
   lint:
     name: Lint
@@ -48,3 +52,33 @@ jobs:
         run: |
           go get -u github.com/rakyll/gotest &> /dev/null
           gotest ./...
+
+  e2e-on-k8s:
+    name: e2e tests against kubernetes
+    runs-on: ubuntu-20.04
+    needs: build-and-test
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install stuff
+        run: |
+          curl -s https://raw.githubusercontent.com/rancher/k3d/main/install.sh | bash
+          go get -u github.com/rakyll/gotest &> /dev/null
+
+      - name: Build container image and import it to k3d
+        run: |
+          make docker-build
+          k3d image import $IMG
+
+      - name: Spawn k8s cluster
+        run: |
+          k3d cluster create --no-lb --k3s-arg "--disable=traefik,servicelb,metrics-server,local-storage@server:*"
+
+      - name: Deploy the operator
+        run: |
+          make install deploy
+          kubectl wait deploy/log2rbac -n log2rbac --for condition=available && sleep 10
+
+      - name: Test
+        run: |
+          cd e2e-test/ && go mod download && gotest ./...
