@@ -76,7 +76,7 @@ func (r *RbacEventHandler) handleResource(ctx context.Context, resource kremserv
 				RequeueAfter: time.Duration(r.Config.Controller.SyncIntervalAfterErrorMinutes) * time.Minute,
 			}
 		}
-		r.emitEvent(ctx, resource, missingRbacEntry)
+		r.emitEvent(resource, missingRbacEntry)
 		tryAgainInSeconds := r.Config.Controller.SyncIntervalAfterPodRestartSeconds
 		if r.Config.Controller.ShouldRestartAppPods {
 			r.restartPods(ctx, appInfo.livePods)
@@ -220,8 +220,9 @@ func (r *RbacEventHandler) getAppInfo(ctx context.Context, resource kremserv1.Rb
 		sa = "default"
 	}
 	if selector == nil {
-		return nil, fmt.Errorf("cannot get pod selector for resource %v", resource)
+		return nil, fmt.Errorf("cannot get pod selector for resource %s / %s", resource.For.Kind, resource.For.Name)
 	}
+	log.Log.Info(fmt.Sprintf("selector: %+v", selector))
 	var podList core.PodList
 	if err := r.Client.List(ctx, &podList, client.InNamespace(forS.Namespace), client.MatchingLabels(selector)); err != nil {
 		return nil, err
@@ -282,8 +283,11 @@ func (r *RbacEventHandler) getObject(ctx context.Context, obj client.Object, nsN
 	}
 	switch casted := obj.(type) {
 	case *apps.Deployment:
+		return casted.Spec.Selector.MatchLabels, casted.Spec.Template.Spec.ServiceAccountName
 	case *apps.ReplicaSet:
+		return casted.Spec.Selector.MatchLabels, casted.Spec.Template.Spec.ServiceAccountName
 	case *apps.DaemonSet:
+		return casted.Spec.Selector.MatchLabels, casted.Spec.Template.Spec.ServiceAccountName
 	case *apps.StatefulSet:
 		return casted.Spec.Selector.MatchLabels, casted.Spec.Template.Spec.ServiceAccountName
 	case *core.Service:
@@ -301,7 +305,8 @@ func (r *RbacEventHandler) ClientSet() *kubernetes.Clientset {
 	return r.clientset
 }
 
-func (r *RbacEventHandler) emitEvent(ctx context.Context, resource kremserv1.RbacNegotiation, entry *RbacEntry) {
+func (r *RbacEventHandler) emitEvent(resource kremserv1.RbacNegotiation, entry *RbacEntry) {
+	// todo: consider using AnnotatedEventf
 	r.Recorder.Eventf(&resource, "Normal", "RbacEntryCreated", "New RBAC entry: "+
 		"role=%s, verb=%s, resource=%s, group=%s", resource.Spec.Role.Name, entry.Verb, entry.Object.Kind, entry.Object.Group)
 }

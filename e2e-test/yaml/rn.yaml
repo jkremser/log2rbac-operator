@@ -1,0 +1,13 @@
+apiVersion: kremser.dev/v1
+kind: RbacNegotiation
+metadata:
+  name: for-k8gb
+spec:
+  for:
+    namespace: k8gb
+    kind: Deployment
+    name: k8gb
+  role:
+    name: new-k8gb-role
+    isClusterRole: true
+    createIfNotExist: true
