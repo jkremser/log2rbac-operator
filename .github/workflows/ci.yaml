@@ -28,6 +28,7 @@ jobs:
         uses: golangci/golangci-lint-action@v2.5.2
         with:
           version: v1.42.1
+          args: --timeout=120s
 
       - name: gokart
         run: |
@@ -75,14 +76,14 @@ jobs:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build container image and import it to k3d
+      - name: Build container image
         run: |
           make container-img
-          k3d image import $IMG
 
-      - name: Spawn k8s cluster
+      - name: Spawn k8s cluster and import the image
         run: |
           k3d cluster create --no-lb --k3s-arg "--disable=traefik,servicelb,metrics-server,local-storage@server:*"
+          k3d image import $IMG
 
       - name: Deploy the operator
         run: |
