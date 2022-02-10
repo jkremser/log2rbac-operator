@@ -17,6 +17,8 @@ endif
 SHELL = /usr/bin/env bash -o pipefail
 .SHELLFLAGS = -ec
 
+GOLANG_VERSION ?= 1.17.5
+
 .PHONY: all
 all: build
 
@@ -71,11 +73,7 @@ run: manifests generate fmt vet ## Run a controller from your host.
 
 .PHONY: container-img
 container-img: ## Build container image with the manager.
-	docker build -t ${IMG} .
-
-.PHONY: docker-push
-docker-push: ## Push docker image with the manager.
-	docker push ${IMG}
+	docker build --build-arg GOLANG_VERSION=$(GOLANG_VERSION) -t $(IMG) .
 
 ##@ Deployment
 
