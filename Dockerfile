@@ -7,7 +7,7 @@ FROM docker.io/golang:${GOLANG_VERSION} as builder
 WORKDIR /workspace
 COPY go.mod go.mod
 COPY go.sum go.sum
-RUN go mod tidy && go mod download
+RUN go mod download
 
 # Copy the go source
 COPY main.go main.go

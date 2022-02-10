@@ -1,10 +1,6 @@
+/log2rbac
 
 # Binaries for programs and plugins
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
 bin
 testbin/*
 
