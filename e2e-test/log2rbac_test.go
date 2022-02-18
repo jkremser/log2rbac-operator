@@ -128,8 +128,8 @@ func TestReconciliation(t *testing.T) {
 			g.Assert(rns).IsNotZero()
 			g.Assert(rns[0].Name).Equal(appRnName)
 		})
-
 		g.It("there is a new event", func() {
+			g.Timeout(125 * time.Second)
 			var checkEvent func(attempts int32)
 			checkEvent = func(attempts int32) {
 				// wait a bit
@@ -164,6 +164,7 @@ func TestReconciliation(t *testing.T) {
 		})
 		g.It("after some time, new rights are populated on the role", func() {
 			// wait a bit
+			g.Timeout(10 * time.Second)
 			time.Sleep(5 * time.Second)
 
 			r, err := k8sCl.RbacV1().ClusterRoles().Get(context.Background(), appRoleName, metav1.GetOptions{})

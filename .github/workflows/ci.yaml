@@ -103,4 +103,4 @@ jobs:
       - name: Print test logs
         if: always()
         run: |
-          kubectl logs -lid=log2rbac --tail=200
+          kubectl logs -nlog2rbac -lid=log2rbac --tail=200
