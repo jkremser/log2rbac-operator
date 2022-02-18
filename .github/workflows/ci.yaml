@@ -84,11 +84,12 @@ jobs:
         run: |
           k3d cluster create --no-lb --k3s-arg "--disable=traefik,servicelb,metrics-server,local-storage@server:*"
           k3d image import $IMG
+          kubectl version --short
 
       - name: Deploy the operator
         run: |
           make install deploy
-          kubectl wait deploy/log2rbac -n log2rbac --for condition=available && sleep 10
+          kubectl wait deploy/log2rbac -n log2rbac --for condition=available --timeout=2m && sleep 10
 
       - name: Test
         run: |
