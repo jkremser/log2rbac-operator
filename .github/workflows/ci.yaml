@@ -99,3 +99,8 @@ jobs:
         run: |
           docker tag $IMG docker.io/jkremser/log2rbac:latest
           docker push docker.io/jkremser/log2rbac:latest
+
+      - name: Print test logs
+        if: always()
+        run: |
+          kubectl logs -lid=log2rbac --tail=200
