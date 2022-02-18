@@ -4,6 +4,11 @@ IMG ?= jkremser/log2rbac:latest
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.22
 
+# version
+LAST_VERSION ?= $(shell git describe --tags --abbrev=0)
+GIT_SHA ?= $(shell git rev-parse --short HEAD)
+VERSION ?= $(LAST_VERSION)-$(GIT_SHA)
+
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
 GOBIN=$(shell go env GOPATH)/bin
@@ -65,15 +70,17 @@ test: manifests generate fmt vet envtest ## Run tests.
 
 .PHONY: build
 build: generate fmt vet ## Build log2rbac (manager) binary.
-	go build -o bin/log2rbac main.go
+	go build -ldflags "-X main.gitSha=$(GIT_SHA) -X main.version=$(VERSION)" -o bin/log2rbac main.go
 
 .PHONY: run
 run: manifests generate fmt vet ## Run a controller from your host.
 	go run ./main.go
 
+GIT_COMMIT := $(shell git rev-list -1 HEAD)
+
 .PHONY: container-img
 container-img: ## Build container image with the manager.
-	docker build --build-arg GOLANG_VERSION=$(GOLANG_VERSION) -t $(IMG) .
+	docker build --build-arg GOLANG_VERSION=$(GOLANG_VERSION) --build-arg GIT_SHA=$(GIT_SHA) --build-arg VERSION=$(VERSION) -t $(IMG) .
 
 ##@ Deployment
 

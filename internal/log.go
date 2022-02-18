@@ -4,7 +4,9 @@ import (
 	"flag"
 	"fmt"
 	"github.com/fatih/color"
+	"github.com/go-logr/logr"
 	"go.uber.org/zap/zapcore"
+	"runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 )
@@ -49,4 +51,13 @@ func PrintBanner(cfg *LogConfig) {
 	for _, line := range lines {
 		fmt.Println(line)
 	}
+}
+
+// PrintInfo prints the versions of golang and the git-sha to the logs
+func PrintInfo(log logr.Logger, version string) {
+	fmt.Println()
+	goVersion := runtime.Version()
+	log.Info(fmt.Sprintf("Golang version: %s", goVersion))
+	log.Info(fmt.Sprintf("Operator version: %s", color.New(color.FgGreen).Sprintf("%s", version)))
+	fmt.Println()
 }

@@ -83,7 +83,9 @@ jobs:
       - name: Spawn k8s cluster and import the image
         run: |
           k3d cluster create --no-lb --k3s-arg "--disable=traefik,servicelb,metrics-server,local-storage@server:*"
+          echo -e "\n\nimporting image: $IMG"
           k3d image import $IMG
+          echo -e "\n\nKubernetes vesion:"
           kubectl version --short
 
       - name: Deploy the operator

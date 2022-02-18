@@ -20,22 +20,22 @@ import (
 
 const (
 	// operator specific names
-	operatorNs = "log2rbac"
+	operatorNs         = "log2rbac"
 	operatorDeployment = operatorNs
-	crdName = "rbacnegotiations.kremser.dev"
-	crdKindName = "RbacNegotiation"
-	svcName = operatorNs + "-metrics-service"
-	saName = operatorNs
-	roleName = operatorNs + "-role"
-	roleBindingName = operatorNs + "-rolebinding"
+	crdName            = "rbacnegotiations.kremser.dev"
+	crdKindName        = "RbacNegotiation"
+	svcName            = operatorNs + "-metrics-service"
+	saName             = operatorNs
+	roleName           = operatorNs + "-role"
+	roleBindingName    = operatorNs + "-rolebinding"
 
 	// test app specific names
-	appNs = "k8gb"
-	appRoleName = "new-" + appNs + "-role"
+	appNs              = "k8gb"
+	appRoleName        = "new-" + appNs + "-role"
 	appRoleBIndingName = appRoleName + "-binding"
-	appDeploymentName = appNs
-	saAppName = appNs
-	appRnName = "for-k8gb"
+	appDeploymentName  = appNs
+	saAppName          = appNs
+	appRnName          = "for-k8gb"
 )
 
 func TestDeployment(t *testing.T) {
@@ -87,7 +87,7 @@ func TestReconciliation(t *testing.T) {
 
 	// pre-requisites: it's empty
 	g.Describe("In vanilla deployment", func() {
-		g.It("there is no role called " + appRoleName, func() {
+		g.It("there is no role called "+appRoleName, func() {
 			_, err := k8sCl.RbacV1().ClusterRoles().Get(context.Background(), appRoleName, metav1.GetOptions{})
 			wasNotFound(g, err)
 		})
@@ -106,7 +106,7 @@ func TestReconciliation(t *testing.T) {
 			callWasOk(g, err, appDep)
 			g.Assert(appDep.Status.ReadyReplicas).Equal(int32(0), "No replica should be available because it's failing on rbac")
 		})
-		g.It("there is still no role called " + appRoleName, func() {
+		g.It("there is still no role called "+appRoleName, func() {
 			_, err := k8sCl.RbacV1().ClusterRoles().Get(context.Background(), appRoleName, metav1.GetOptions{})
 			wasNotFound(g, err)
 		})
@@ -129,7 +129,7 @@ func TestReconciliation(t *testing.T) {
 			g.Assert(rns[0].Name).Equal(appRnName)
 		})
 		g.It("there is a new event", func() {
-			g.Timeout(125 * time.Second)
+			g.Timeout(130 * time.Second)
 			var checkEvent func(attempts int32)
 			checkEvent = func(attempts int32) {
 				// wait a bit
@@ -143,11 +143,13 @@ func TestReconciliation(t *testing.T) {
 						found = true
 					}
 				}
-				if !found && attempts == 0 {
-					g.Failf("New event with reason = 'RbacEntryCreated' was not found, events: %+v", evList.Items)
-				} else {
-					checkEvent(attempts - 1)
+				if found {
+					return
 				}
+				if attempts == 0 {
+					g.Failf("New event with reason = 'RbacEntryCreated' was not found, events: %+v", evList.Items)
+				}
+				checkEvent(attempts - 1)
 			}
 			checkEvent(12)
 		})
@@ -174,7 +176,7 @@ func TestReconciliation(t *testing.T) {
 	})
 }
 
-func getAndTestClients(g *G) (*kubernetes.Clientset, *crd.Clientset, *rest.RESTClient){
+func getAndTestClients(g *G) (*kubernetes.Clientset, *crd.Clientset, *rest.RESTClient) {
 	var k8sCl *kubernetes.Clientset
 	var crdCl *crd.Clientset
 	var crdRest *rest.RESTClient
@@ -208,7 +210,7 @@ func deploySampleApp(t *testing.T) {
 	applyYaml(t, "./yaml/k8gb.yaml")
 }
 
-func createCr(t *testing.T/*, crdCl *crd.Clientset*/) {
+func createCr(t *testing.T /*, crdCl *crd.Clientset*/) {
 	applyYaml(t, "./yaml/rn.yaml")
 }
 
@@ -218,7 +220,7 @@ func isNotErr(g *G, err error) {
 	}
 }
 
-func callWasOk(g *G, err error, obj... interface{}) {
+func callWasOk(g *G, err error, obj ...interface{}) {
 	isNotErr(g, err)
 	for _, o := range obj {
 		g.Assert(o).IsNotNil()
