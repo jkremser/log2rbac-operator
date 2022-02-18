@@ -75,7 +75,7 @@ func main() {
 		LeaderElectionID:       "924cc958.dev",
 	})
 	if err != nil {
-		setupLog.Error(err, "unable to start manager")
+		setupLog.Error(err, "unable to start log2rbac manager")
 		os.Exit(1)
 	}
 
@@ -99,10 +99,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	setupLog.Info("starting manager")
 	internal.PrintBanner(cfg.Log)
+	setupLog.Info("is starting..")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
-		setupLog.Error(err, "problem running manager")
+		setupLog.Error(err, "problem running log2rbac")
 		os.Exit(1)
 	}
 }

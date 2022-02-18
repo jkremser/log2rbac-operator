@@ -13,6 +13,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
+	"time"
 
 	"testing"
 )
@@ -112,7 +113,7 @@ func TestReconciliation(t *testing.T) {
 		g.It("there is no rbacnegotiation CR", func() {
 			rns, err := getRNs(crdRest)
 			callWasOk(g, err, rns)
-			g.Assert(rns).IsZero()
+			g.Assert(len(rns)).IsZero()
 		})
 	})
 
@@ -127,24 +128,34 @@ func TestReconciliation(t *testing.T) {
 			g.Assert(rns).IsNotZero()
 			g.Assert(rns[0].Name).Equal(appRnName)
 		})
+
 		g.It("there is a new event", func() {
-			evList, er := k8sCl.EventsV1().Events(operatorNs).List(context.Background(), metav1.ListOptions{})
-			callWasOk(g, er, evList)
-			found := false
-			for _, e := range evList.Items {
-				if e.Reason == "RbacEntryCreated" {
-					found = true
+			var checkEvent func(attempts int32)
+			checkEvent = func(attempts int32) {
+				// wait a bit
+				time.Sleep(10 * time.Second)
+
+				evList, er := k8sCl.EventsV1().Events(operatorNs).List(context.Background(), metav1.ListOptions{})
+				callWasOk(g, er, evList)
+				found := false
+				for _, e := range evList.Items {
+					if e.Reason == "RbacEntryCreated" {
+						found = true
+					}
+				}
+				if !found && attempts == 0 {
+					g.Failf("New event with reason = 'RbacEntryCreated' was not found, events: %+v", evList.Items)
+				} else {
+					checkEvent(attempts - 1)
 				}
 			}
-			if !found {
-				g.Failf("New event with reason = 'RbacEntryCreated' was not found, events: %+v", evList.Items)
-			}
+			checkEvent(12)
 		})
-		g.It("the role got created", func() {
+		g.It("the cluster role got created", func() {
 			r, err := k8sCl.RbacV1().ClusterRoles().Get(context.Background(), appRoleName, metav1.GetOptions{})
 			callWasOk(g, err, r)
 		})
-		g.It("it's bound to the associated service account", func() {
+		g.It("the cluster role is bound to the associated service account", func() {
 			rb, err := k8sCl.RbacV1().ClusterRoleBindings().Get(context.Background(), appRoleBIndingName, metav1.GetOptions{})
 			callWasOk(g, err, rb)
 			g.Assert(rb.Subjects).IsNotZero()
@@ -152,10 +163,12 @@ func TestReconciliation(t *testing.T) {
 			g.Assert(rb.Subjects[0].Name).Equal(saAppName)
 		})
 		g.It("after some time, new rights are populated on the role", func() {
-			// todo: this
-		})
-		g.It("after even more time the app is able to start", func() {
-			// todo: this
+			// wait a bit
+			time.Sleep(5 * time.Second)
+
+			r, err := k8sCl.RbacV1().ClusterRoles().Get(context.Background(), appRoleName, metav1.GetOptions{})
+			callWasOk(g, err, r)
+			g.Assert(len(r.Rules)).IsNotZero()
 		})
 	})
 }
