@@ -33,6 +33,7 @@ spec:
         args:
         - --leader-elect
         image: jkremser/log2rbac
+        imagePullPolicy: Always
         name: manager
         securityContext:
           allowPrivilegeEscalation: false

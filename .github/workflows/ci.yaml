@@ -84,7 +84,7 @@ jobs:
         run: |
           k3d cluster create --no-lb --k3s-arg "--disable=traefik,servicelb,metrics-server,local-storage@server:*"
           echo "importing image: $IMG"
-          k3d image import $IMG
+          k3d image import $IMG:latest
           echo "Kubernetes vesion:"
           kubectl version --short
 
@@ -102,9 +102,12 @@ jobs:
           docker tag $IMG docker.io/jkremser/log2rbac:latest
           docker push docker.io/jkremser/log2rbac:latest
 
-      - name: Print test logs
+      - name: Print test logs & debug
         if: always()
         run: |
+          echo "::group::k get events"
+          kubectl get events -A
+          echo "::endgroup::"
           echo "::group::k describe deploy log2rbac"
           kubectl describe deploy -nlog2rbac log2rbac
           echo "::endgroup::"
