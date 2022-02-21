@@ -235,6 +235,9 @@ func (r *RbacEventHandler) getAppInfo(ctx context.Context, resource kremserv1.Rb
 	req := r.ClientSet().CoreV1().Pods(forS.Namespace).GetLogs(podName, &core.PodLogOptions{})
 	podLogs, err := req.Stream(ctx)
 	if err != nil {
+		// todo:
+		// handle ContainerCreating error
+		// Unable to get logs from underlying pod. Check the ReplicaSet (k describe) if the service account isn't missing.	{"error": "container \"k8gb\" in pod \"k8gb-55985fb855-5vzsk\" is waiting to start: ContainerCreating"}
 		return nil, err
 	}
 	defer podLogs.Close()

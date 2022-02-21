@@ -106,12 +106,17 @@ jobs:
         if: always()
         run: |
           echo "::group::k get events"
-          kubectl get events -A
+          kubectl get events -A || true
           echo "::endgroup::"
           echo "::group::k describe deploy log2rbac"
-          kubectl describe deploy -nlog2rbac log2rbac
+          kubectl describe deploy -nlog2rbac log2rbac || true
           echo "::endgroup::"
-          echo "::group::k describe clusterrole log2rbac-role"
-          kubectl describe clusterrole log2rbac-role
+          echo "::group::k describe clusterrole new-k8gb-role"
+          kubectl describe clusterrole new-k8gb-role || true
           echo "::endgroup::"
-          kubectl logs -nlog2rbac -lid=log2rbac --tail=200
+          echo CRs:
+          kubectl get rn -A || true
+          echo Deployments:
+          kubectl get deployment -A || true
+          echo Operator logs:
+          kubectl logs -nlog2rbac -lid=log2rbac --tail=200 || true

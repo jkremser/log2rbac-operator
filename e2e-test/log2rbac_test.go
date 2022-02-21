@@ -36,6 +36,7 @@ const (
 	appDeploymentName  = appNs
 	saAppName          = appNs
 	appRnName          = "for-k8gb"
+	appRnNs            = appNs
 )
 
 func TestDeployment(t *testing.T) {
@@ -127,6 +128,7 @@ func TestReconciliation(t *testing.T) {
 			callWasOk(g, err, rns)
 			g.Assert(rns).IsNotZero()
 			g.Assert(rns[0].Name).Equal(appRnName)
+			g.Assert(rns[0].Namespace).Equal(appRnNs)
 		})
 		g.It("there is a new event", func() {
 			g.Timeout(130 * time.Second)
@@ -135,7 +137,7 @@ func TestReconciliation(t *testing.T) {
 				// wait a bit
 				time.Sleep(10 * time.Second)
 
-				evList, er := k8sCl.EventsV1().Events(operatorNs).List(context.Background(), metav1.ListOptions{})
+				evList, er := k8sCl.EventsV1().Events(appRnNs).List(context.Background(), metav1.ListOptions{})
 				callWasOk(g, er, evList)
 				found := false
 				for _, e := range evList.Items {

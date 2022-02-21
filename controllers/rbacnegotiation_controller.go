@@ -40,6 +40,8 @@ type RbacNegotiationReconciler struct {
 	Recorder record.EventRecorder
 }
 
+// Cluster admin is required for this operator, because one can't assign RBAC permission that
+// it currently does not hold and the operator also needs to assign verbs on unseen api groups and resources (CRDs)
 //+kubebuilder:rbac:groups="*",resources="*",verbs="*"
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
