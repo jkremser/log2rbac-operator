@@ -111,4 +111,7 @@ jobs:
           echo "::group::k describe deploy log2rbac"
           kubectl describe deploy -nlog2rbac log2rbac
           echo "::endgroup::"
+          echo "::group::k describe clusterrole log2rbac-role"
+          kubectl describe clusterrole log2rbac-role
+          echo "::endgroup::"
           kubectl logs -nlog2rbac -lid=log2rbac --tail=200

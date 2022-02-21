@@ -40,13 +40,7 @@ type RbacNegotiationReconciler struct {
 	Recorder record.EventRecorder
 }
 
-//+kubebuilder:rbac:groups=kremser.dev,resources=rbacnegotiations,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=kremser.dev,resources=rbacnegotiations/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=kremser.dev,resources=rbacnegotiations/finalizers,verbs=update
-//+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch
-//+kubebuilder:rbac:groups="",resources=pods,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=rbac,resources={serviceaccounts,roles,clusterroles,rolebindings,clusterrolebindings},verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups="",resources=events,verbs=create;patch
+//+kubebuilder:rbac:groups="*",resources="*",verbs="*"
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
