@@ -32,7 +32,7 @@ spec:
         - /log2rbac
         args:
         - --leader-elect
-        image: jkremser/log2rbac:latest
+        image: jkremser/log2rbac
         name: manager
         securityContext:
           allowPrivilegeEscalation: false

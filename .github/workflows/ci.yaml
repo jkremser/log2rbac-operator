@@ -105,4 +105,7 @@ jobs:
       - name: Print test logs
         if: always()
         run: |
+          echo "::group::k describe deploy log2rbac"
+          kubectl describe deploy -nlog2rbac log2rbac
+          echo "::endgroup::"
           kubectl logs -nlog2rbac -lid=log2rbac --tail=200
