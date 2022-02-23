@@ -49,6 +49,7 @@ func PrintBanner(cfg *LogConfig) {
 		pad + color.New(c1).Sprintf("         |___/"),
 	}
 	for _, line := range lines {
+		line := line
 		fmt.Println(line)
 	}
 }

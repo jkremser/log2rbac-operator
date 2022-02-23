@@ -105,6 +105,7 @@ jobs:
       - name: Print test logs & debug
         if: always()
         run: |
+          env | sort
           echo "::group::k get events"
           kubectl get events -A || true
           echo "::endgroup::"

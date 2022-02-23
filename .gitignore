@@ -17,3 +17,6 @@ testbin/*
 *.swp
 *.swo
 *~
+
+#semgrep
+semgrep.sarif

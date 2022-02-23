@@ -8,7 +8,7 @@ make install
 kubectl create ns k8gb 2> /dev/null || true
 kubectl create sa k8gb -n k8gb 2> /dev/null || true
 helm repo add --force-update k8gb https://www.k8gb.io
-helm -n k8gb upgrade -i k8gb $CHART --set k8gb.deployRbac=false
+helm -n k8gb upgrade -i k8gb "$CHART" --set k8gb.deployRbac=false
 
 # make sure the role and rolebinding are not there
 kubectl delete clusterrole new-k8gb-role 2> /dev/null || true
