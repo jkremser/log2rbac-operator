@@ -231,8 +231,10 @@ func (r *RbacEventHandler) getAppInfo(ctx context.Context, resource kremserv1.Rb
 	if len(pods) == 0 {
 		return nil, fmt.Errorf("no pods found for %s called '%s'", forS.Kind, forS.Name)
 	}
-	podName := pods[0].GetName()
-	req := r.ClientSet().CoreV1().Pods(forS.Namespace).GetLogs(podName, &core.PodLogOptions{})
+	pod := pods[0]
+	podName := pod.GetName()
+	containerName := getContainerName(pod)
+	req := r.ClientSet().CoreV1().Pods(forS.Namespace).GetLogs(podName, &core.PodLogOptions{Container: containerName})
 	podLogs, err := req.Stream(ctx)
 	if err != nil {
 		// todo:
@@ -298,6 +300,15 @@ func (r *RbacEventHandler) getObject(ctx context.Context, obj client.Object, nsN
 	}
 
 	return nil, ""
+}
+
+func getContainerName(pod core.Pod) string {
+	for k, v := range pod.GetAnnotations() {
+		if k == "kubectl.kubernetes.io/default-container" {
+			return v
+		}
+	}
+	return pod.Spec.Containers[0].Name
 }
 
 // ClientSet returns the k8s client
