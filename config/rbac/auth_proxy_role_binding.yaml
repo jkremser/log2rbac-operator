@@ -10,3 +10,4 @@ subjects:
 - kind: ServiceAccount
   name: log2rbac
   namespace: log2rbac
+

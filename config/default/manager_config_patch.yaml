@@ -18,3 +18,4 @@ spec:
       - name: manager-config
         configMap:
           name: manager-config
+

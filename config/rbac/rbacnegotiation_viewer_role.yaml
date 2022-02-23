@@ -18,3 +18,4 @@ rules:
   - rbacnegotiations/status
   verbs:
   - get
+

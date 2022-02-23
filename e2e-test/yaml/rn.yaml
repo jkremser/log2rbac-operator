@@ -12,3 +12,4 @@ spec:
     name: new-k8gb-role
     isClusterRole: true
     createIfNotExist: true
+

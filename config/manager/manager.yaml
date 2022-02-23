@@ -62,3 +62,4 @@ spec:
             memory: 64Mi
       serviceAccountName: log2rbac
       terminationGracePeriodSeconds: 10
+

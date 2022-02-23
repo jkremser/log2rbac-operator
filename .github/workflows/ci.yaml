@@ -121,3 +121,4 @@ jobs:
           kubectl get deployment -A || true
           echo Operator logs:
           kubectl logs -nlog2rbac -lid=log2rbac --tail=200 || true
+

@@ -18,3 +18,4 @@ spec:
   selector:
     matchLabels:
       control-plane: log2rbac
+

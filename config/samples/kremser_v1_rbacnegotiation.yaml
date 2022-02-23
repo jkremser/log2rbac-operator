@@ -11,3 +11,4 @@ spec:
     name: new-role
     isClusterRole: true
     createIfNotExist: true
+

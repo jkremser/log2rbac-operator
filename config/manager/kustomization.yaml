@@ -24,3 +24,4 @@ images:
 - name: jkremser/log2rbac:latest
   newName: jkremser/log2rbac
   newTag: latest
+
