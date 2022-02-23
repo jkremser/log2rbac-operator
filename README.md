@@ -14,7 +14,14 @@ Role can be either existing one or operator can create a new one for you and bin
 ## Quick Start
 
 ```bash
+# clone repo and
 make deploy
+```
+
+alternatively install it using [all-in-one yaml](deploy/all-in-one.yaml)
+
+```bash
+kubectl apply -f http://bit.do/log2rbac
 ```
 
 ```bash
