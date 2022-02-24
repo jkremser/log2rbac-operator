@@ -1,0 +1,67 @@
+#!/bin/bash
+
+export CR_TEMPLATE=$(cat <<CustomResource
+apiVersion: kremser.dev/v1
+kind: RbacNegotiation
+metadata:
+  name: for-\$resource
+spec:
+  for:
+    kind: \$kind
+    name: \$resource
+    namespace: \$ns
+  role:
+    name: new-\$resource-role
+    isClusterRole: true
+    createIfNotExist: true
+CustomResource
+)
+
+LOG2RBAC_COMMON_FZF_ARGS="--ansi --cycle --height=45% --border=none --margin=2 --layout=reverse --info=inline  --border=none --margin=2 --layout=reverse --info=inline"
+LOG2RBAC_FZF_ARGS="$LOG2RBAC_COMMON_FZF_ARGS --preview-window right:80%  --color preview-bg:#333333"
+_OPT1_DESC="Initiates the rbac negotiation for one of the supported Kubernetes kinds.;This will then create the custom resource for the operator to start the RBAC negotiation.;You will be asked in the next step for more details"
+_OPT2_DESC="log2rbac operator related tasks. You can deploy and undeploy the operator using this option."
+
+mainMenu() {
+    _KUBECTL_CONTEXT=$(kubectl config current-context)
+    which figlet > /dev/null && figlet log2rbac
+    ans1=`echo -e "Negotiate RBAC\t$_OPT1_DESC\nOperator management\t$_OPT2_DESC" | nl -v0 | fzf --header "Select an action to do" --prompt='log2rbac λ' --preview="echo {} | cut -d$'\t' -f 3- | tr ';' '\n'" --with-nth=2 -d "\\t" ${LOG2RBAC_FZF_ARGS} | awk '{print $1}'`
+    [[ $ans1 == 0 ]] && {
+        # Negotiate RBAC
+        ns=`kubectl get ns --no-headers | fzf -e $LOG2RBAC_COMMON_FZF_ARGS --header "Select the k8s namespace with the resource for which you want to start the rbac negotiation" | cut -d' ' -f1`
+        [[ -z $ns ]] && exit 0
+        kindAnswer=`echo -e "Deployment\nReplicaSet\nDaemonSet\nStatefulSet\nService\nCustom pod selector" | nl -v0 | fzf -e $LOG2RBAC_COMMON_FZF_ARGS --header "Select the Kind of the resource" --with-nth=2..`
+        [[ -z $kindAnswer ]] && exit 0
+        [[ $(echo $kindAnswer | awk '{print $1}') = 5 ]] && {
+            echo "todo: custom pod selector"
+        } || {
+            kind=$(echo $kindAnswer | awk '{print $2}')
+            _OPT1_DESC="Deploys the operator using the current kubectl context ($_KUBECTL_CONTEXT).;It will run the following command: kubectl apply -f http://bit.do/log2rbac;If you want to explore what is going to be deployed, check the url.;It contains all-in-one yaml with all the operator's components.;;;TLDR: runs kubectl apply -f http://bit.do/log2rbac"
+            resource=`kubectl get $kind -n $ns --no-headers | fzf --header "Select the $kind" --prompt='log2rbac λ' --preview='echo -e "Following custom resource will be created:\n" && echo -e \$CR_TEMPLATE | resource={1} ns='$ns' kind='$kind' envsubst' ${LOG2RBAC_FZF_ARGS} --preview-window right:65% | awk '{print $1}'`
+            OLD_IFS="$IFS"
+            IFS=""
+            [[ ! -z $resource ]] && echo $CR_TEMPLATE | resource=$resource ns=$ns kind=$kind envsubst | kubectl apply -f -
+            IFS="$OLD_IFS"
+        }
+    }
+    [[ $ans1 == 1 ]] && {
+        # Operator management
+        _OPT2_1_DESC="Deploys the operator using the current kubectl context ($_KUBECTL_CONTEXT).;It will run the following command: kubectl apply -f http://bit.do/log2rbac;If you want to explore what is going to be deployed, check the url.;It contains all-in-one yaml with all the operator's components.;;;TLDR: runs kubectl apply -f http://bit.do/log2rbac"
+        _OPT2_2_DESC="Undeploys all the operator's resources from the currently active kubectl context ($_KUBECTL_CONTEXT).;This is an inverse operation to the deploy and you will lose the oprator this way.;It doesn't clean the custom resources that have been created.;;;;TLDR: runs kubectl delete -f http://bit.do/log2rbac"
+        ans2=`echo -e "Deploy\t$_OPT2_1_DESC\nUndeploy\t$_OPT2_2_DESC" | nl -v0 | fzf --header "Select an action to do" --prompt='log2rbac λ' --preview="echo {} | cut -d$'\t' -f 3- | tr ';' '\n'" --with-nth=2 -d "\\t" ${LOG2RBAC_FZF_ARGS} | awk '{print $1}'`
+        [[ $ans2 == 0 ]] && {
+            echo -e "\nDeploying the operator.."
+            kubectl apply -f http://bit.do/log2rbac && echo -e "\nOperator was successfuly deployed!"
+        }
+        [[ $ans2 == 1 ]] && {
+            echo -e "\nUndeploying the operator.."
+            kubectl delete -f http://bit.do/log2rbac && echo -e "\nOperator was successfuly undeployed!"
+        }
+    }
+}
+
+[[ $# == 0 ]] && {
+    ! which fzf > /dev/null && echo "Install fzf, this plugin needs it" && exit 1
+    ! which kubectl > /dev/null && echo "Install kubectl, this plugin needs it" && exit 2
+    mainMenu
+}
