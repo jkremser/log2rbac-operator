@@ -218,6 +218,8 @@ func (r *RbacEventHandler) getAppInfo(ctx context.Context, resource kremserv1.Rb
 	}
 	if len(sa) == 0 {
 		sa = "default"
+	} else {
+		r.createSAIfNotExists(ctx, sa, forS.Namespace)
 	}
 	if selector == nil {
 		return nil, fmt.Errorf("cannot get pod selector for resource %s / %s", resource.For.Kind, resource.For.Name)
@@ -252,6 +254,18 @@ func (r *RbacEventHandler) getAppInfo(ctx context.Context, resource kremserv1.Rb
 	str := buf.String()
 
 	return &AppInfo{log: str, serviceAccount: sa, livePods: pods}, nil
+}
+
+func (r *RbacEventHandler) createSAIfNotExists(ctx context.Context, saName string, ns string) {
+	sa := core.ServiceAccount{}
+	if err := r.Client.Get(ctx, client.ObjectKey{Name: saName, Namespace: ns}, &sa); err != nil && errors.IsNotFound(err) {
+		log.Log.Info("Service account '%s' has not been found, creating one..", saName)
+		sa.Name = saName
+		sa.Namespace = ns
+		if err := r.Client.Create(ctx, &sa); err != nil {
+			log.Log.Error(err, "Unable to create the service account")
+		}
+	}
 }
 
 func (r *RbacEventHandler) getSelectorAndSA(ctx context.Context, resource kremserv1.ForSpec) (map[string]string, string) {
@@ -308,6 +322,7 @@ func getContainerName(pod core.Pod) string {
 			return v
 		}
 	}
+	// if the annotation is not specified, use the first declared container
 	return pod.Spec.Containers[0].Name
 }
 
