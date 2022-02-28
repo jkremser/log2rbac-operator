@@ -22,6 +22,14 @@ LOG2RBAC_FZF_ARGS="$LOG2RBAC_COMMON_FZF_ARGS --preview-window right:80%  --color
 _OPT1_DESC="Initiates the rbac negotiation for one of the supported Kubernetes kinds.;This will then create the custom resource for the operator to start the RBAC negotiation.;You will be asked in the next step for more details"
 _OPT2_DESC="log2rbac operator related tasks. You can deploy and undeploy the operator using this option."
 
+createCr() {
+    [[ $# != 3 ]] && echo "Wrong number of arguments, usage: createCr <ns> <kind> <resource>" && exit 2
+    ns=$1; kind=$2; resource=$3
+    OLD_IFS="$IFS" && IFS=""
+    [[ ! -z $resource ]] && echo $CR_TEMPLATE | resource=$resource ns=$ns kind=$kind envsubst | kubectl apply -f -
+    IFS="$OLD_IFS"
+}
+
 mainMenu() {
     _KUBECTL_CONTEXT=$(kubectl config current-context)
     which figlet > /dev/null && figlet log2rbac
@@ -44,9 +52,7 @@ mainMenu() {
             kind=$(echo $kindAnswer | awk '{print $2}')
             _OPT1_DESC="Deploys the operator using the current kubectl context ($_KUBECTL_CONTEXT).;It will run the following command: kubectl apply -f http://bit.do/log2rbac;If you want to explore what is going to be deployed, check the url.;It contains all-in-one yaml with all the operator's components.;;;TLDR: runs kubectl apply -f http://bit.do/log2rbac"
             resource=`kubectl get $kind -n $ns --no-headers | fzf --header "Select the $kind" --prompt='log2rbac λ' --preview='echo -e "Following custom resource will be created:\n" && echo -e \$CR_TEMPLATE | resource={1} ns='$ns' kind='$kind' envsubst' ${LOG2RBAC_FZF_ARGS} --preview-window right:65% | awk '{print $1}'`
-            OLD_IFS="$IFS" && IFS=""
-            [[ ! -z $resource ]] && echo $CR_TEMPLATE | resource=$resource ns=$ns kind=$kind envsubst | kubectl apply -f -
-            IFS="$OLD_IFS"
+            createCr $ns $kind $resource
         }
     }
     [[ $ans1 == 1 ]] && {
@@ -70,8 +76,42 @@ mainMenu() {
     }
 }
 
+printHelp() {
+  echo
+  echo "Usage:"
+  echo "  kubectl log2rbac [args]"
+  echo
+  echo "Available args:"
+  echo " -h                               Prints the help about the plugin (this output)"
+  echo " -n <ns> <kind> <resourceName>    Creates the CR for operator and initiates the RBAC negotiation process"
+  echo "                                    - <ns>   is a valid k8s namespace that is available in the current context"
+  echo "                                    - <kind> is one of the following: deployment, replicaset, statefulset, daemonset, service"
+  echo "                                    - <resourceName> is the name of particular <kind> in namespace <ns>"
+  echo
+  echo "Examples:"
+  echo "  kubectl log2rbac                                      ... starts the plugin in the TUI (interactive) mode"
+  echo "  kubectl log2rbac -n monitoring deployment prometheus  ... creates the RbacNegotiation for the selected deployment"
+  echo "  kubectl log2rbac -n default service my-service        ... creates the RbacNegotiation for the service 'my-service'"
+  echo
+}
+
 [[ $# == 0 ]] && {
     ! which fzf > /dev/null && echo "Install fzf, this plugin needs it" && exit 1
     ! which kubectl > /dev/null && echo "Install kubectl, this plugin needs it" && exit 2
     mainMenu
+    exit 0
 }
+
+for param in "$@"; do
+    [[ $resNext == "2" ]] && echo "too many arguments" && printHelp && exit 1
+    [[ $param == "-h" ]] && printHelp && exit 1
+    [[ $nsNext == "1" ]] && ns=$param && nsNext=0 && continue
+    [[ $resNext == "1" ]] && res=$param && resNext=2 && continue
+    [[ $param == "-n" ]] && nsNext=1 && continue
+    kind=$param && resNext=1
+done
+([ -z $ns ] || [ -z $kind ] || [ -z $res ]) && echo "not enough arguments" && printHelp && exit 1
+[[ "$kind" =~ ^(deployment|deploy|replicaset|rs|statefulset|ss|daemonset|ds|service|svc)$ ]] || {
+  echo "Unsupported kind: $kind" && printHelp && exit 3
+}
+createCr "$ns" "$kind" "$res"

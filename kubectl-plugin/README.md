@@ -9,3 +9,17 @@ Simple TUI based shell script to interface with the log2rbac operator. It can (u
 sudo ln -s $PWD/kubectl-log2rbac /usr/local/bin/kubectl-log2rbac
 kubectl log2rbac
 ```
+
+or install the latest released version using Krew
+
+```bash
+λ kubectl krew install --manifest=log2rbac.yaml
+Installing plugin: log2rbac
+Installed plugin: log2rbac
+\
+ | Use this plugin:
+ | 	kubectl log2rbac
+ | Documentation:
+ | 	https://github.com/jkremser/log2rbac-operator/tree/master/kubectl-plugin
+/
+```
