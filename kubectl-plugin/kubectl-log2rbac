@@ -33,13 +33,18 @@ mainMenu() {
         kindAnswer=`echo -e "Deployment\nReplicaSet\nDaemonSet\nStatefulSet\nService\nCustom pod selector" | nl -v0 | fzf -e $LOG2RBAC_COMMON_FZF_ARGS --header "Select the Kind of the resource" --with-nth=2..`
         [[ -z $kindAnswer ]] && exit 0
         [[ $(echo $kindAnswer | awk '{print $1}') = 5 ]] && {
-            echo "todo: custom pod selector"
+            # custom pod selector
+            echo -e "\nWe support only one pair that identifies the pod using the labels on it (key=value).\nEnter the key:" && read key
+            echo "Enter the value:" && read value
+            echo -e "\n\nApplying following manifest:"
+            OLD_IFS="$IFS" && IFS=""
+            echo $CR_TEMPLATE | resource="$key-$value" ns=$ns kind="" envsubst | sed '5,10s/kind/podSelector/' | sed "/podSelector/a \ \ \ \ \ \ $key: $value" | tee /dev/tty | kubectl apply -f -
+            IFS="$OLD_IFS"
         } || {
             kind=$(echo $kindAnswer | awk '{print $2}')
             _OPT1_DESC="Deploys the operator using the current kubectl context ($_KUBECTL_CONTEXT).;It will run the following command: kubectl apply -f http://bit.do/log2rbac;If you want to explore what is going to be deployed, check the url.;It contains all-in-one yaml with all the operator's components.;;;TLDR: runs kubectl apply -f http://bit.do/log2rbac"
             resource=`kubectl get $kind -n $ns --no-headers | fzf --header "Select the $kind" --prompt='log2rbac λ' --preview='echo -e "Following custom resource will be created:\n" && echo -e \$CR_TEMPLATE | resource={1} ns='$ns' kind='$kind' envsubst' ${LOG2RBAC_FZF_ARGS} --preview-window right:65% | awk '{print $1}'`
-            OLD_IFS="$IFS"
-            IFS=""
+            OLD_IFS="$IFS" && IFS=""
             [[ ! -z $resource ]] && echo $CR_TEMPLATE | resource=$resource ns=$ns kind=$kind envsubst | kubectl apply -f -
             IFS="$OLD_IFS"
         }
