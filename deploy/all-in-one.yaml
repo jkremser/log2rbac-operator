@@ -324,7 +324,7 @@ spec:
         command:
         - /log2rbac
         image: jkremser/log2rbac:latest
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         livenessProbe:
           httpGet:
             path: /healthz

@@ -1,5 +1,8 @@
-# create only a service account 
-kubectl create sa prometheus-operator -n monitoring
+# create only namespace
+kubectl create ns monitoring
+
+# create only a service account (not needed, operator will create this)
+#kubectl create sa prometheus-operator -n monitoring
 
 kubectl apply -f https://github.com/prometheus-operator/kube-prometheus/raw/main/manifests/prometheusOperator-deployment.yaml
 

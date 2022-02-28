@@ -10,13 +10,13 @@ configMapGenerator:
   name: manager-config
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-patches:
-- patch: |-
-    - op: replace
-      path: /spec/template/spec/containers/0/imagePullPolicy
-      value: IfNotPresent
-  target:
-    kind: Deployment
+#patches:
+#- patch: |-
+#    - op: replace
+#      path: /spec/template/spec/containers/0/imagePullPolicy
+#      value: IfNotPresent
+#  target:
+#    kind: Deployment
 images:
 - name: jkremser/log2rbac
   newName: jkremser/log2rbac

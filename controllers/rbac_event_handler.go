@@ -259,7 +259,7 @@ func (r *RbacEventHandler) getAppInfo(ctx context.Context, resource kremserv1.Rb
 func (r *RbacEventHandler) createSAIfNotExists(ctx context.Context, saName string, ns string) {
 	sa := core.ServiceAccount{}
 	if err := r.Client.Get(ctx, client.ObjectKey{Name: saName, Namespace: ns}, &sa); err != nil && errors.IsNotFound(err) {
-		log.Log.Info("Service account '%s' has not been found, creating one..", saName)
+		log.Log.Info(fmt.Sprintf("Service account '%s' has not been found, creating one..", saName))
 		sa.Name = saName
 		sa.Namespace = ns
 		if err := r.Client.Create(ctx, &sa); err != nil {
@@ -297,7 +297,7 @@ func (r *RbacEventHandler) getSelectorAndSA(ctx context.Context, resource kremse
 
 func (r *RbacEventHandler) getObject(ctx context.Context, obj client.Object, nsName client.ObjectKey) (map[string]string, string) {
 	if err := r.Client.Get(ctx, nsName, obj); err != nil {
-		log.Log.Error(err, "Cannot get k8s object %s with name %v ", obj.GetObjectKind(), nsName)
+		log.Log.Error(err, fmt.Sprintf("Cannot get k8s object %s with name %v ", obj.GetObjectKind(), nsName))
 		return nil, ""
 	}
 	switch casted := obj.(type) {
