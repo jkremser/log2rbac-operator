@@ -48,7 +48,8 @@ mainMenu() {
         # Operator management
         _OPT2_1_DESC="Deploys the operator using the current kubectl context ($_KUBECTL_CONTEXT).;It will run the following command: kubectl apply -f http://bit.do/log2rbac;If you want to explore what is going to be deployed, check the url.;It contains all-in-one yaml with all the operator's components.;;;TLDR: runs kubectl apply -f http://bit.do/log2rbac"
         _OPT2_2_DESC="Undeploys all the operator's resources from the currently active kubectl context ($_KUBECTL_CONTEXT).;This is an inverse operation to the deploy and you will lose the oprator this way.;It doesn't clean the custom resources that have been created.;;;;TLDR: runs kubectl delete -f http://bit.do/log2rbac"
-        ans2=`echo -e "Deploy\t$_OPT2_1_DESC\nUndeploy\t$_OPT2_2_DESC" | nl -v0 | fzf --header "Select an action to do" --prompt='log2rbac λ' --preview="echo {} | cut -d$'\t' -f 3- | tr ';' '\n'" --with-nth=2 -d "\\t" ${LOG2RBAC_FZF_ARGS} | awk '{print $1}'`
+        _OPT2_3_DESC="Prints the logs from the operator pod.;;;;;The following command will be run:;kubectl logs -f -lid=log2rbac -n log2rbac"
+        ans2=`echo -e "Deploy\t$_OPT2_1_DESC\nUndeploy\t$_OPT2_2_DESC\nPrint Logs\t$_OPT2_3_DESC" | nl -v0 | fzf --header "Select an action to do" --prompt='log2rbac λ' --preview="echo {} | cut -d$'\t' -f 3- | tr ';' '\n'" --with-nth=2 -d "\\t" ${LOG2RBAC_FZF_ARGS} | awk '{print $1}'`
         [[ $ans2 == 0 ]] && {
             echo -e "\nDeploying the operator.."
             kubectl apply -f http://bit.do/log2rbac && echo -e "\nOperator was successfuly deployed!"
@@ -56,6 +57,10 @@ mainMenu() {
         [[ $ans2 == 1 ]] && {
             echo -e "\nUndeploying the operator.."
             kubectl delete -f http://bit.do/log2rbac && echo -e "\nOperator was successfuly undeployed!"
+        }
+        [[ $ans2 == 2 ]] && {
+            echo -e "\nLogs:\n\n"
+            kubectl logs -f -lid=log2rbac -n log2rbac
         }
     }
 }
