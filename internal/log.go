@@ -9,6 +9,7 @@ import (
 	"runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	"time"
 )
 
 // SetupLog tweak the default log to use custom time format and use colors if supported
@@ -52,6 +53,7 @@ func PrintBanner(cfg *LogConfig) {
 		line := line
 		fmt.Println(line)
 	}
+	time.Sleep(100 * time.Millisecond)
 }
 
 // PrintInfo prints the versions of golang and the git-sha to the logs

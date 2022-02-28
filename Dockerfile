@@ -18,11 +18,14 @@ COPY controllers/ controllers/
 COPY internal/ internal/
 
 # Build
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags "-X main.gitSha=${GIT_SHA} -X main.version=${VERSION}" -a -o log2rbac main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags "-w -s -X main.gitSha=${GIT_SHA} -X main.version=${VERSION}" -a -o log2rbac main.go
 
 # Use distroless as minimal base image to package the log2rbac (manager) binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
 FROM gcr.io/distroless/static:nonroot
+ARG GOLANG_VERSION
+ARG GIT_SHA
+ARG VERSION
 LABEL BASE_IMAGE="gcr.io/distroless/static:nonroot" \
       GOLANG_VERSION=${GOLANG_VERSION} \
       GIT_SHA=${GIT_SHA} \

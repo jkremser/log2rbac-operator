@@ -40,7 +40,7 @@ var (
 	scheme   = runtime.NewScheme()
 	setupLog = ctrl.Log.WithName("setup")
 	version  = "dev"
-	//gitSha   = "unknown"
+	gitSha   = "unknown"
 )
 
 func init() {
@@ -104,6 +104,7 @@ func main() {
 	internal.PrintBanner(cfg.Log)
 	setupLog.Info("is starting..")
 	internal.PrintInfo(setupLog, version)
+	setupLog.Info("gitsha", "sha", gitSha)
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running log2rbac")
 		os.Exit(1)
