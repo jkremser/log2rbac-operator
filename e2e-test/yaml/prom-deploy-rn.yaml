@@ -1,0 +1,21 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+---
+apiVersion: kremser.dev/v1
+kind: RbacNegotiation
+metadata:
+  name: for-prom
+  namespace: monitoring
+spec:
+  for:
+    namespace: monitoring
+    kind: Deployment
+    name: prometheus-operator
+  role:
+    name: custom-monitoring-role
+    isClusterRole: false
+    createIfNotExist: true
+---

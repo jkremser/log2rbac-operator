@@ -1,0 +1,24 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: custom-k8gb-role
+  namespace: k8gb
+---
+apiVersion: kremser.dev/v1
+kind: RbacNegotiation
+metadata:
+  name: for-k8gb-using-selector
+  namespace: k8gb
+spec:
+  for:
+    namespace: k8gb
+    name: k8gb
+    podSelector:
+      name: k8gb
+  serviceAccountName: k8gb
+  role:
+    name: custom-k8gb-role
+    isClusterRole: false
+    createIfNotExist: false
+---

@@ -4,7 +4,7 @@ kubectl create ns monitoring
 # create only a service account (not needed, operator will create this)
 #kubectl create sa prometheus-operator -n monitoring
 
-kubectl apply -f https://github.com/prometheus-operator/kube-prometheus/raw/main/manifests/prometheusOperator-deployment.yaml
+kubectl apply -f https://github.com/prometheus-operator/kube-prometheus/raw/v0.10.0/manifests/prometheusOperator-deployment.yaml
 
 # create RbacNegotiation for the operator
 cat <<CustomResource | kubectl apply -n monitoring -f -

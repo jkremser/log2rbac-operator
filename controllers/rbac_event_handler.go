@@ -150,7 +150,7 @@ func (r *RbacEventHandler) addMissingRbacEntry(ctx context.Context, ns string, s
 		}
 	} else {
 		nrol := rbac.Role{}
-		if err := r.Client.Get(ctx, client.ObjectKey{Name: role.Name}, &nrol); err != nil {
+		if err := r.Client.Get(ctx, client.ObjectKey{Name: role.Name, Namespace: ns}, &nrol); err != nil {
 			if !role.CreateIfNotExist {
 				log.Log.Error(err, "Unable to read role")
 				return err

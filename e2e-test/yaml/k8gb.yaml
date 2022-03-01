@@ -422,26 +422,6 @@ status:
   conditions: []
   storedVersions: []
 ---
-# Source: k8gb/charts/coredns/templates/service.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: k8gb-coredns
-  labels:
-    app.kubernetes.io/managed-by: "Helm"
-    app.kubernetes.io/instance: "k8gb"
-    helm.sh/chart: "coredns-1.15.3"
-    app.kubernetes.io/name: coredns
-  annotations:
-    {}
-spec:
-  selector:
-    app.kubernetes.io/instance: "k8gb"
-    app.kubernetes.io/name: coredns
-  ports:
-    - {port: 53, targetPort: 5353, protocol: UDP, name: udp-5353}
-  type: ClusterIP
----
 # Source: k8gb/templates/operator.yaml
 apiVersion: apps/v1
 kind: Deployment

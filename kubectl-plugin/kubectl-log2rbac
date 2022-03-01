@@ -82,7 +82,7 @@ printHelp() {
   echo "  kubectl log2rbac [args]"
   echo
   echo "Available args:"
-  echo " -h                               Prints the help about the plugin (this output)"
+  echo " -h, --help                       Prints the help about the plugin (this output)"
   echo " -n <ns> <kind> <resourceName>    Creates the CR for operator and initiates the RBAC negotiation process"
   echo "                                    - <ns>   is a valid k8s namespace that is available in the current context"
   echo "                                    - <kind> is one of the following: deployment, replicaset, statefulset, daemonset, service"
@@ -92,6 +92,7 @@ printHelp() {
   echo "  kubectl log2rbac                                      ... starts the plugin in the TUI (interactive) mode"
   echo "  kubectl log2rbac -n monitoring deployment prometheus  ... creates the RbacNegotiation for the selected deployment"
   echo "  kubectl log2rbac -n default service my-service        ... creates the RbacNegotiation for the service 'my-service'"
+  echo "  kubectl log2rbac --namespace foo ss my-statefulset    ... creates the RbacNegotiation for a stateful set in namespace foo"
   echo
 }
 
@@ -104,14 +105,16 @@ printHelp() {
 
 for param in "$@"; do
     [[ $resNext == "2" ]] && echo "too many arguments" && printHelp && exit 1
-    [[ $param == "-h" ]] && printHelp && exit 1
+    ([ $param == "-h" ] || [ $param == "--help" ]) && printHelp && exit 1
     [[ $nsNext == "1" ]] && ns=$param && nsNext=0 && continue
     [[ $resNext == "1" ]] && res=$param && resNext=2 && continue
-    [[ $param == "-n" ]] && nsNext=1 && continue
+    ([ $param == "-n" ] || [ $param == "--namespace" ]) && nsNext=1 && continue
     kind=$param && resNext=1
 done
 ([ -z $ns ] || [ -z $kind ] || [ -z $res ]) && echo "not enough arguments" && printHelp && exit 1
 [[ "$kind" =~ ^(deployment|deploy|replicaset|rs|statefulset|ss|daemonset|ds|service|svc)$ ]] || {
   echo "Unsupported kind: $kind" && printHelp && exit 3
 }
+
+# do the thing
 createCr "$ns" "$kind" "$res"

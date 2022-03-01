@@ -1,7 +1,7 @@
 apiVersion: kremser.dev/v1
 kind: RbacNegotiation
 metadata:
-  name: for-k8gb
+  name: for-k8gb-using-deployment
   namespace: k8gb
 spec:
   for:

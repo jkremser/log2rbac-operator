@@ -55,7 +55,7 @@ func (r *RbacNegotiationReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	log.Log.Info("fetching RbacNegotiation resource")
 	rbacNeg := kremserv1.RbacNegotiation{}
 	if err := r.Client.Get(ctx, req.NamespacedName, &rbacNeg); err != nil {
-		log.Log.Error(err, "failed to get RbacNegotiation resource")
+		log.Log.Info(fmt.Sprintf("Failed to get RbacNegotiation '%s/%s'. It was probably deleted.", req.NamespacedName.Namespace, req.NamespacedName.Name))
 		// Ignore NotFound errors as they will be retried automatically if the
 		// resource is created in the future.
 		return ctrl.Result{}, client.IgnoreNotFound(err)

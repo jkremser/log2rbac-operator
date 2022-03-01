@@ -8,6 +8,7 @@ import (
 	operator "github.com/jkremser/log2rbac-operator/controllers"
 	crd "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/apimachinery/pkg/api/errors"
+	rbac "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/client-go/kubernetes"
@@ -29,17 +30,24 @@ const (
 	roleName           = operatorNs + "-role"
 	roleBindingName    = operatorNs + "-rolebinding"
 
-	// test app specific names
-	appNs              = "k8gb"
-	appRoleName        = "new-" + appNs + "-role"
-	appRoleBIndingName = appRoleName + "-binding"
-	appDeploymentName  = appNs
-	saAppName          = appNs
-	appRnName          = "for-k8gb"
-	appRnNs            = appNs
+	// test app specific names (k8gb)
+	appK8gbNs              = "k8gb"
+	appK8gbRoleName        = "new-" + appK8gbNs + "-role"
+	appK8gbRoleName2       = "custom-" + appK8gbNs + "-role"
+	appK8gbRoleBIndingName = appK8gbRoleName + "-binding"
+	appK8gbDeploymentName  = appK8gbNs
+	saAppK8gbName          = appK8gbNs
+	appK8gbRnName1         = "for-" + appK8gbNs + "-using-deployment"
+	appK8gbRnName2         = "for-" + appK8gbNs + "-using-selector"
+	appK8gbRnNs            = appK8gbNs
+
+	// test app specific names (prometheus)
+	appPromNs              = "monitoring"
+	appPromRoleName        = "custom-" + appPromNs + "-role"
 )
 
 func TestDeployment(t *testing.T) {
+
 	g := Goblin(t)
 	k8sCl, crdCl, _ := getAndTestClients(g)
 	g.Describe("After log2rbac deployment", func() {
@@ -82,33 +90,40 @@ func TestDeployment(t *testing.T) {
 	})
 }
 
-func TestReconciliation(t *testing.T) {
+func assertK8gbNotThere(g *G, k8sCl *kubernetes.Clientset) {
+	g.Describe("In vanilla deployment", func() {
+		g.It("there is no cluster role called "+appK8gbRoleName, func() {
+			_, err := k8sCl.RbacV1().ClusterRoles().Get(context.Background(), appK8gbRoleName, metav1.GetOptions{})
+			wasNotFound(g, err)
+		})
+		g.It("there is no sample app", func() {
+			_, err := k8sCl.AppsV1().Deployments(appK8gbNs).Get(context.Background(), appK8gbDeploymentName, metav1.GetOptions{})
+			wasNotFound(g, err)
+		})
+	})
+}
+
+func TestReconciliationForDeployment(t *testing.T) {
+	// assure it's empty
+	makeClean(t, appK8gbNs)
+
 	g := Goblin(t)
 	k8sCl, _, crdRest := getAndTestClients(g)
 
 	// pre-requisites: it's empty
-	g.Describe("In vanilla deployment", func() {
-		g.It("there is no role called "+appRoleName, func() {
-			_, err := k8sCl.RbacV1().ClusterRoles().Get(context.Background(), appRoleName, metav1.GetOptions{})
-			wasNotFound(g, err)
-		})
-		g.It("there is no sample app", func() {
-			_, err := k8sCl.AppsV1().Deployments(appNs).Get(context.Background(), appDeploymentName, metav1.GetOptions{})
-			wasNotFound(g, err)
-		})
-	})
+	assertK8gbNotThere(g, k8sCl)
 
 	// deploy test application that fails to start because of insufficient rights
-	deploySampleApp(t)
+	deploySampleApp1(t)
 
 	g.Describe("When sample app got deployed", func() {
 		g.It("the deployment is present", func() {
-			appDep, err := k8sCl.AppsV1().Deployments(appNs).Get(context.Background(), appDeploymentName, metav1.GetOptions{})
+			appDep, err := k8sCl.AppsV1().Deployments(appK8gbNs).Get(context.Background(), appK8gbDeploymentName, metav1.GetOptions{})
 			callWasOk(g, err, appDep)
 			g.Assert(appDep.Status.ReadyReplicas).Equal(int32(0), "No replica should be available because it's failing on rbac")
 		})
-		g.It("there is still no role called "+appRoleName, func() {
-			_, err := k8sCl.RbacV1().ClusterRoles().Get(context.Background(), appRoleName, metav1.GetOptions{})
+		g.It("there is still no role called "+appK8gbRoleName, func() {
+			_, err := k8sCl.RbacV1().ClusterRoles().Get(context.Background(), appK8gbRoleName, metav1.GetOptions{})
 			wasNotFound(g, err)
 		})
 		g.It("there is no rbacnegotiation CR", func() {
@@ -127,8 +142,8 @@ func TestReconciliation(t *testing.T) {
 			rns, err := getRNs(crdRest)
 			callWasOk(g, err, rns)
 			g.Assert(rns).IsNotZero()
-			g.Assert(rns[0].Name).Equal(appRnName)
-			g.Assert(rns[0].Namespace).Equal(appRnNs)
+			g.Assert(rns[0].Name).Equal(appK8gbRnName1)
+			g.Assert(rns[0].Namespace).Equal(appK8gbRnNs)
 		})
 		g.It("there is a new event", func() {
 			g.Timeout(130 * time.Second)
@@ -137,7 +152,7 @@ func TestReconciliation(t *testing.T) {
 				// wait a bit
 				time.Sleep(10 * time.Second)
 
-				evList, er := k8sCl.EventsV1().Events(appRnNs).List(context.Background(), metav1.ListOptions{})
+				evList, er := k8sCl.EventsV1().Events(appK8gbRnNs).List(context.Background(), metav1.ListOptions{})
 				callWasOk(g, er, evList)
 				found := false
 				for _, e := range evList.Items {
@@ -156,27 +171,100 @@ func TestReconciliation(t *testing.T) {
 			checkEvent(12)
 		})
 		g.It("the cluster role got created", func() {
-			r, err := k8sCl.RbacV1().ClusterRoles().Get(context.Background(), appRoleName, metav1.GetOptions{})
+			r, err := k8sCl.RbacV1().ClusterRoles().Get(context.Background(), appK8gbRoleName, metav1.GetOptions{})
 			callWasOk(g, err, r)
 		})
 		g.It("the cluster role is bound to the associated service account", func() {
-			rb, err := k8sCl.RbacV1().ClusterRoleBindings().Get(context.Background(), appRoleBIndingName, metav1.GetOptions{})
+			rb, err := k8sCl.RbacV1().ClusterRoleBindings().Get(context.Background(), appK8gbRoleBIndingName, metav1.GetOptions{})
 			callWasOk(g, err, rb)
 			g.Assert(rb.Subjects).IsNotZero()
 			g.Assert(rb.Subjects[0]).IsNotZero()
-			g.Assert(rb.Subjects[0].Name).Equal(saAppName)
+			g.Assert(rb.Subjects[0].Name).Equal(saAppK8gbName)
 		})
 		g.It("after some time, new rights are populated on the role", func() {
 			// wait a bit
 			g.Timeout(10 * time.Second)
 			time.Sleep(5 * time.Second)
 
-			r, err := k8sCl.RbacV1().ClusterRoles().Get(context.Background(), appRoleName, metav1.GetOptions{})
+			r, err := k8sCl.RbacV1().ClusterRoles().Get(context.Background(), appK8gbRoleName, metav1.GetOptions{})
 			callWasOk(g, err, r)
 			g.Assert(len(r.Rules)).IsNotZero()
 		})
 	})
+	makeClean(t, appK8gbNs)
 }
+
+func TestReconciliationForCustomSelector(t *testing.T) {
+	g := Goblin(t)
+	k8sCl, _, crdRest := getAndTestClients(g)
+
+	// pre-requisites: it's empty
+	assertK8gbNotThere(g, k8sCl)
+
+	// deploy test app again
+	deploySampleApp1(t)
+
+	// apply the CR
+	applyYaml(t, "./yaml/k8gb-selector-rn.yaml")
+
+	g.Describe("After rbacnegotiation was requested (using selector)", func() {
+		var rulesNumber int
+		var role *rbac.Role
+		g.It("there is role called "+appK8gbRoleName, func() {
+			var err error
+			role, err = k8sCl.RbacV1().Roles(appK8gbNs).Get(context.Background(), appK8gbRoleName2, metav1.GetOptions{})
+			callWasOk(g, err, role)
+		})
+		g.It("but the role is empty", func() {
+			rulesNumber = len(role.Rules)
+			g.Assert(rulesNumber <= 1).IsTrue() // or there is just one item if the operator was fast enough
+		})
+		g.It("the CR was created", func() {
+			rns, err := getRNs(crdRest)
+			callWasOk(g, err, rns)
+			g.Assert(rns).IsNotZero()
+			g.Assert(rns[0].Name).Equal(appK8gbRnName2)
+			g.Assert(rns[0].Namespace).Equal(appK8gbRnNs)
+		})
+		g.It("after some time, new rights are populated on the role", func() {
+			// wait a bit
+			g.Timeout(130 * time.Second)
+			var checkRole func(attempts int32)
+			checkRole = func(attempts int32) {
+				// wait a bit
+				time.Sleep(10 * time.Second)
+
+				r, err := k8sCl.RbacV1().Roles(appK8gbNs).Get(context.Background(), appK8gbRoleName2, metav1.GetOptions{})
+				callWasOk(g, err, r)
+				newRightsFound := rulesNumber < len(r.Rules)
+				if newRightsFound {
+					return // ok
+				}
+				if attempts == 0 {
+					g.Failf("No new rules were populated on role %s. Rules: %+v", appK8gbRoleName2, r.Rules)
+				}
+				checkRole(attempts - 1)
+			}
+			checkRole(12)
+		})
+	})
+
+	//makeClean(t, appK8gbNs)
+}
+
+//func TestReconciliationForPrometheusService(t *testing.T) {
+//	// assure it's empty
+//	makeClean(t, appPromNs)
+
+//	applyYaml(t, "./yaml/prom-svc-rn.yaml")
+//	deploySampleApp2(t)
+//}
+//
+//func TestReconciliationForPrometheusDeployment(t *testing.T) {
+//	makeClean(t, appPromNs)
+//	applyYaml(t, "./yaml/prom-svc-rn.yaml")
+//}
+
 
 func getAndTestClients(g *G) (*kubernetes.Clientset, *crd.Clientset, *rest.RESTClient) {
 	var k8sCl *kubernetes.Clientset
@@ -200,20 +288,28 @@ func getAndTestClients(g *G) (*kubernetes.Clientset, *crd.Clientset, *rest.RESTC
 	return k8sCl, crdCl, crdRest
 }
 
-func applyYaml(t *testing.T, path string) {
-	helmRepoAdd := shell.Command{
+func kubectl(t *testing.T, args []string) {
+	cmd := shell.Command{
 		Command: "kubectl",
-		Args:    []string{"apply", "-f", path},
+		Args:    args,
 	}
-	shell.RunCommand(t, helmRepoAdd)
+	shell.RunCommand(t, cmd)
 }
 
-func deploySampleApp(t *testing.T) {
+func applyYaml(t *testing.T, path string) {
+	kubectl(t, []string{"apply", "-f", path})
+}
+
+func deploySampleApp1(t *testing.T) {
 	applyYaml(t, "./yaml/k8gb.yaml")
 }
 
+func deploySampleApp2(t *testing.T) {
+	applyYaml(t, "https://github.com/prometheus-operator/kube-prometheus/raw/v0.10.0/manifests/prometheusOperator-deployment.yaml")
+}
+
 func createCr(t *testing.T /*, crdCl *crd.Clientset*/) {
-	applyYaml(t, "./yaml/rn.yaml")
+	applyYaml(t, "./yaml/k8gb-deploy-rn.yaml")
 }
 
 func isNotErr(g *G, err error) {
@@ -242,4 +338,17 @@ func getRNs(c *rest.RESTClient) ([]kremserv1.RbacNegotiation, error) {
 		return nil, e
 	}
 	return result.Items, nil
+}
+
+func makeClean(t *testing.T, ns string) {
+	// delete all RNs
+	kubectl(t, []string{"delete", "rbacnegotiations", "--all", "-A"})
+
+	// delete namespace
+	kubectl(t, []string{"delete", "ns", ns, "--ignore-not-found"})
+
+	// delete cluster roles
+	kubectl(t, []string{"delete", "clusterrole", appK8gbRoleName, "--ignore-not-found"})
+	kubectl(t, []string{"delete", "clusterrole", appPromRoleName, "--ignore-not-found"})
+	time.Sleep(15 * time.Second)
 }
