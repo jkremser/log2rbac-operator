@@ -6,9 +6,9 @@ import (
 	"github.com/gruntwork-io/terratest/modules/shell"
 	kremserv1 "github.com/jkremser/log2rbac-operator/api/v1"
 	operator "github.com/jkremser/log2rbac-operator/controllers"
+	rbac "k8s.io/api/rbac/v1"
 	crd "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/apimachinery/pkg/api/errors"
-	rbac "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/client-go/kubernetes"
@@ -42,8 +42,11 @@ const (
 	appK8gbRnNs            = appK8gbNs
 
 	// test app specific names (prometheus)
-	appPromNs              = "monitoring"
-	appPromRoleName        = "custom-" + appPromNs + "-role"
+	appPromNs        = "monitoring"
+	appPromRoleName1 = "custom-" + appPromNs + "-role1"
+	appPromRoleName2 = "custom-" + appPromNs + "-role2"
+	appPromRnName1   = "for-prom-svc"
+	//appPromRnName2         = "for-prom-deploy"
 )
 
 func TestDeployment(t *testing.T) {
@@ -194,7 +197,7 @@ func TestReconciliationForDeployment(t *testing.T) {
 	makeClean(t, appK8gbNs)
 }
 
-func TestReconciliationForCustomSelector(t *testing.T) {
+func XTestReconciliationForCustomSelector(t *testing.T) {
 	g := Goblin(t)
 	k8sCl, _, crdRest := getAndTestClients(g)
 
@@ -249,22 +252,87 @@ func TestReconciliationForCustomSelector(t *testing.T) {
 		})
 	})
 
-	//makeClean(t, appK8gbNs)
+	makeClean(t, appK8gbNs)
 }
 
-//func TestReconciliationForPrometheusService(t *testing.T) {
-//	// assure it's empty
-//	makeClean(t, appPromNs)
+func TestReconciliationForPrometheusService(t *testing.T) {
+	g := Goblin(t)
+	k8sCl, _, crdRest := getAndTestClients(g)
 
-//	applyYaml(t, "./yaml/prom-svc-rn.yaml")
-//	deploySampleApp2(t)
-//}
+	// assure it's empty
+	makeClean(t, appPromNs)
+
+	g.Describe("For prometheus-operator (using svc)", func() {
+		g.It("there is no cluster role called "+appPromRoleName1, func() {
+			_, err := k8sCl.RbacV1().ClusterRoles().Get(context.Background(), appPromRoleName1, metav1.GetOptions{})
+			wasNotFound(g, err)
+		})
+	})
+
+	applyYaml(t, "./yaml/prom-svc-rn.yaml")
+	deploySampleApp2(t)
+
+	g.Describe("After was deployed prometheus-operator and RN requested (using svc)", func() {
+		var rulesNumber int
+		var newRole *rbac.ClusterRole
+		g.It("the CR was created", func() {
+			rns, err := getRNs(crdRest)
+			callWasOk(g, err, rns)
+			g.Assert(rns).IsNotZero()
+			g.Assert(rns[0].Name).Equal(appPromRnName1)
+			g.Assert(rns[0].Namespace).Equal(appPromNs)
+		})
+		g.It("there is eventually cluster role called "+appPromRoleName1, func() {
+			g.Timeout(65 * time.Second)
+			var checkRole func(attempts int32)
+			checkRole = func(attempts int32) {
+				// wait a bit
+				time.Sleep(10 * time.Second)
+				role, err := k8sCl.RbacV1().ClusterRoles().Get(context.Background(), appPromRoleName1, metav1.GetOptions{})
+				if errors.IsNotFound(err) {
+					checkRole(attempts - 1)
+				}
+				newRole = role
+				if attempts == 0 {
+					g.Failf("ClusterRole %s was not created by the operator.", appPromRoleName1)
+				}
+			}
+			checkRole(5)
+		})
+		g.It("but the cluster role is empty", func() {
+			rulesNumber = len(newRole.Rules)
+			g.Assert(rulesNumber <= 1).IsTrue() // or there is just one item if the operator was fast enough
+		})
+		g.It("after some time, new rights are populated on the cluster role", func() {
+			// wait a bit
+			g.Timeout(130 * time.Second)
+			var checkRole func(attempts int32)
+			checkRole = func(attempts int32) {
+				// wait a bit
+				time.Sleep(10 * time.Second)
+
+				r, err := k8sCl.RbacV1().ClusterRoles().Get(context.Background(), appPromRoleName1, metav1.GetOptions{})
+				callWasOk(g, err, r)
+				newRightsFound := rulesNumber < len(r.Rules)
+				if newRightsFound {
+					return // ok
+				}
+				if attempts == 0 {
+					g.Failf("No new rules were populated on cluster role %s. Rules: %+v", appPromRoleName1, r.Rules)
+				}
+				checkRole(attempts - 1)
+			}
+			checkRole(12)
+		})
+	})
+	makeClean(t, appPromNs)
+}
+
 //
 //func TestReconciliationForPrometheusDeployment(t *testing.T) {
 //	makeClean(t, appPromNs)
-//	applyYaml(t, "./yaml/prom-svc-rn.yaml")
+//	applyYaml(t, "./yaml/prom-deploy-rn.yaml")
 //}
-
 
 func getAndTestClients(g *G) (*kubernetes.Clientset, *crd.Clientset, *rest.RESTClient) {
 	var k8sCl *kubernetes.Clientset
@@ -348,7 +416,6 @@ func makeClean(t *testing.T, ns string) {
 	kubectl(t, []string{"delete", "ns", ns, "--ignore-not-found"})
 
 	// delete cluster roles
-	kubectl(t, []string{"delete", "clusterrole", appK8gbRoleName, "--ignore-not-found"})
-	kubectl(t, []string{"delete", "clusterrole", appPromRoleName, "--ignore-not-found"})
-	time.Sleep(15 * time.Second)
+	kubectl(t, []string{"delete", "clusterroles", appK8gbRoleName, appPromRoleName1, appPromRoleName2, "--ignore-not-found"})
+	time.Sleep(5 * time.Second)
 }

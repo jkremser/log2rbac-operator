@@ -217,6 +217,11 @@ func (r *RbacEventHandler) getAppInfo(ctx context.Context, resource kremserv1.Rb
 		selector = forS.PodSelector
 	}
 	if len(sa) == 0 {
+		k := strings.ToLower(forS.Kind)
+		if k == "svc" || k == "service" {
+			// unsupported, use-case. For svc we need to know the sa
+			return nil, fmt.Errorf("cannot get service account from a service. You need to specify it explicitly in the custom resource")
+		}
 		sa = "default"
 	} else {
 		r.createSAIfNotExists(ctx, sa, forS.Namespace)

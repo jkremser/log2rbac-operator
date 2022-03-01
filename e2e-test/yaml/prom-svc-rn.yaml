@@ -4,18 +4,34 @@ kind: Namespace
 metadata:
   name: monitoring
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus-operator-svc
+  namespace: monitoring
+spec:
+  ports:
+    - port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/name: prometheus-operator
+    app.kubernetes.io/part-of: kube-prometheus
+---
 apiVersion: kremser.dev/v1
 kind: RbacNegotiation
 metadata:
-  name: for-prom
+  name: for-prom-svc
   namespace: monitoring
 spec:
   for:
     namespace: monitoring
-    kind: Deployment
-    name: prometheus-operator
+    kind: Service
+    name: prometheus-operator-svc
+  serviceAccountName: prometheus-operator
   role:
-    name: custom-monitoring-role
-    isClusterRole: false
+    name: custom-monitoring-role1
+    isClusterRole: true
     createIfNotExist: true
 ---

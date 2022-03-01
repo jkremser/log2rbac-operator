@@ -7,7 +7,7 @@ metadata:
 apiVersion: kremser.dev/v1
 kind: RbacNegotiation
 metadata:
-  name: for-prom
+  name: for-prom-deploy
   namespace: monitoring
 spec:
   for:
@@ -15,7 +15,7 @@ spec:
     kind: Deployment
     name: prometheus-operator
   role:
-    name: custom-monitoring-role
+    name: custom-monitoring-role2
     isClusterRole: false
     createIfNotExist: true
 ---
