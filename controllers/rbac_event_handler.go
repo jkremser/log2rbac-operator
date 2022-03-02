@@ -56,7 +56,7 @@ type AppInfo struct {
 func (r *RbacEventHandler) handleResource(ctx context.Context, resource kremserv1.RbacNegotiation) ctrl.Result {
 	appInfo, err := r.getAppInfo(ctx, resource.Spec)
 	if err != nil {
-		log.Log.Error(err, "Unable to get logs from underlying pod. Check the ReplicaSet (k describe) if the service account isn't missing.")
+		log.Log.Error(err, "Unable to get logs from underlying pod.")
 		return ctrl.Result{
 			Requeue:      true,
 			RequeueAfter: time.Duration(r.Config.Controller.SyncIntervalAfterNoLogsSeconds) * time.Second,
@@ -244,9 +244,10 @@ func (r *RbacEventHandler) getAppInfo(ctx context.Context, resource kremserv1.Rb
 	req := r.ClientSet().CoreV1().Pods(forS.Namespace).GetLogs(podName, &core.PodLogOptions{Container: containerName})
 	podLogs, err := req.Stream(ctx)
 	if err != nil {
-		// todo:
-		// handle ContainerCreating error
-		// Unable to get logs from underlying pod. Check the ReplicaSet (k describe) if the service account isn't missing.	{"error": "container \"k8gb\" in pod \"k8gb-55985fb855-5vzsk\" is waiting to start: ContainerCreating"}
+		if strings.Contains(fmt.Sprint(err), "waiting to start: ContainerCreating") {
+			return nil, fmt.Errorf("pod %s is still starting (ContainerCreating)", podName)
+		}
+		log.Log.V(-2).Info("Check the ReplicaSet if the service account isn't missing.")
 		return nil, err
 	}
 	defer podLogs.Close()

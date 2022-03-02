@@ -20,3 +20,6 @@ testbin/*
 
 #semgrep
 semgrep.sarif
+
+# mac
+.DS_Store
