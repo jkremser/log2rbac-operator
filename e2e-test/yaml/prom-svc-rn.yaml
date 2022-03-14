@@ -1,14 +1,8 @@
 ---
 apiVersion: v1
-kind: Namespace
-metadata:
-  name: monitoring
----
-apiVersion: v1
 kind: Service
 metadata:
   name: prometheus-operator-svc
-  namespace: monitoring
 spec:
   ports:
     - port: 8080
@@ -23,10 +17,8 @@ apiVersion: kremser.dev/v1
 kind: RbacNegotiation
 metadata:
   name: for-prom-svc
-  namespace: monitoring
 spec:
   for:
-    namespace: monitoring
     kind: Service
     name: prometheus-operator-svc
   serviceAccountName: prometheus-operator

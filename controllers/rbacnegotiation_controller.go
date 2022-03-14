@@ -60,6 +60,9 @@ func (r *RbacNegotiationReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		// resource is created in the future.
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
+	if rbacNeg.Spec.For.Namespace == "" {
+		rbacNeg.Spec.For.Namespace = req.Namespace
+	}
 	log.Log.Info(fmt.Sprintf("New rbac negotiation event: for %s '%s'", strings.ToLower(rbacNeg.Spec.For.Kind), rbacNeg.Spec.For.Name))
 	result := r.handler.handleResource(ctx, rbacNeg)
 	return result, nil

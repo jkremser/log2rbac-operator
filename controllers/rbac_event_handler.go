@@ -247,7 +247,7 @@ func (r *RbacEventHandler) getAppInfo(ctx context.Context, resource kremserv1.Rb
 		if strings.Contains(fmt.Sprint(err), "waiting to start: ContainerCreating") {
 			return nil, fmt.Errorf("pod %s is still starting (ContainerCreating)", podName)
 		}
-		log.Log.V(-2).Info("Check the ReplicaSet if the service account isn't missing.")
+		log.Log.V(1).Info("Check the ReplicaSet if the service account isn't missing.")
 		return nil, err
 	}
 	defer podLogs.Close()
@@ -265,7 +265,7 @@ func (r *RbacEventHandler) getAppInfo(ctx context.Context, resource kremserv1.Rb
 func (r *RbacEventHandler) createSAIfNotExists(ctx context.Context, saName string, ns string) {
 	sa := core.ServiceAccount{}
 	if err := r.Client.Get(ctx, client.ObjectKey{Name: saName, Namespace: ns}, &sa); err != nil && errors.IsNotFound(err) {
-		log.Log.Info(fmt.Sprintf("Service account '%s' has not been found, creating one..", saName))
+		log.Log.Info(fmt.Sprintf("Service account '%s/%s' has not been found, creating one..", ns, saName))
 		sa.Name = saName
 		sa.Namespace = ns
 		if err := r.Client.Create(ctx, &sa); err != nil {
