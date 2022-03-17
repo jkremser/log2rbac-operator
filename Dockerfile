@@ -39,3 +39,4 @@ COPY --from=builder /workspace/log2rbac .
 USER 65532:65532
 
 ENTRYPOINT ["/log2rbac"]
+CMD ["--zap-encoder=console"]
