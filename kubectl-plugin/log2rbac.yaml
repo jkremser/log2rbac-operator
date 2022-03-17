@@ -7,8 +7,12 @@ spec:
   homepage: https://github.com/jkremser/log2rbac-operator/tree/master/kubectl-plugin
   shortDescription: "Fine-tune your RBAC using log2rbac operator"
   description: |
-    Simple TUI based kubectl plugin to interface with the log2rbac operator. It can (un)deploy the operator and create the `RbacNegotiation`
-    custom resources for various types of K8s kinds.
+    Simple TUI based kubectl plugin to interface with the log2rbac operator.
+    It can (un)deploy the operator and create the `RbacNegotiation` custom
+    resources for various types of K8s kinds. The operator will help with
+    setting up the correct RBAC rules for your application by inspecting the
+    log files from pods and adding the rights violation as new rules.
+    Don't use this in production, but only for development purposes!
   platforms:
     - selector:
         matchExpressions:
