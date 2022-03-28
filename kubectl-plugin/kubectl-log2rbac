@@ -17,7 +17,7 @@ spec:
 CustomResource
 )
 
-LOG2RBAC_COMMON_FZF_ARGS="--ansi --cycle --height=45% --border=none --margin=2 --layout=reverse --info=inline  --border=none --margin=2 --layout=reverse --info=inline"
+LOG2RBAC_COMMON_FZF_ARGS="--ansi --cycle --height=45% --margin=2 --layout=reverse --info=inline --margin=2 --layout=reverse --info=inline"
 LOG2RBAC_FZF_ARGS="$LOG2RBAC_COMMON_FZF_ARGS --preview-window right:80%  --color preview-bg:#333333"
 _OPT1_DESC="Initiates the rbac negotiation for one of the supported Kubernetes kinds.;This will then create the custom resource for the operator to start the RBAC negotiation.;You will be asked in the next step for more details"
 _OPT2_DESC="log2rbac operator related tasks. You can deploy and undeploy the operator using this option."
