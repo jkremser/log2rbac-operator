@@ -22,7 +22,7 @@ archives:
 dockers:
   - image_templates:
       - "docker.io/jkremser/{{ .ProjectName }}:v{{ .Version }}-amd64"
-      - "gcr.io/jkremser/{{ .ProjectName }}:v{{ .Version }}-amd64"
+      - "ghcr.io/jkremser/{{ .ProjectName }}:v{{ .Version }}-amd64"
     build_flag_templates:
       - "--platform=linux/amd64"
       - "--label=org.opencontainers.image.title={{ .ProjectName }}"
@@ -30,7 +30,7 @@ dockers:
       - "--label=org.opencontainers.image.version={{ .Version }}"
   - image_templates:
       - "docker.io/jkremser/{{ .ProjectName }}:v{{ .Version }}-arm64"
-      - "gcr.io/jkremser/{{ .ProjectName }}:v{{ .Version }}-arm64"
+      - "ghcr.io/jkremser/{{ .ProjectName }}:v{{ .Version }}-arm64"
     goarch: arm64
     build_flag_templates:
       - "--platform=linux/arm64"
@@ -42,10 +42,10 @@ docker_manifests:
     image_templates:
       - docker.io/jkremser/{{ .ProjectName }}:v{{ .Version }}-amd64
       - docker.io/jkremser/{{ .ProjectName }}:v{{ .Version }}-arm64
-  - name_template: gcr.io/jkremser/{{ .ProjectName }}:{{ .Tag }}
+  - name_template: ghcr.io/jkremser/{{ .ProjectName }}:{{ .Tag }}
     image_templates:
-      - gcr.io/jkremser/{{ .ProjectName }}:v{{ .Version }}-amd64
-      - gcr.io/jkremser/{{ .ProjectName }}:v{{ .Version }}-arm64
+      - ghcr.io/jkremser/{{ .ProjectName }}:v{{ .Version }}-amd64
+      - ghcr.io/jkremser/{{ .ProjectName }}:v{{ .Version }}-arm64
 checksum:
   name_template: 'checksums.txt'
 snapshot:
