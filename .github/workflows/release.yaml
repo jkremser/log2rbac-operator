@@ -21,7 +21,7 @@ jobs:
           echo "::set-output name=previous_tag::${previous_tag}"
       - uses: heinrichreimer/github-changelog-generator-action@v2.2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.RELEASER_TOKEN }}
           project: log2rbac-operator
           sinceTag: ${{ steps.get_tag.outputs.previous_tag }}
           output: changes
@@ -54,5 +54,5 @@ jobs:
           version: v1.7.0
           args: release --rm-dist --release-notes=changes
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.RELEASER_TOKEN }}
 

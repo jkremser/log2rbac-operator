@@ -1,0 +1,43 @@
+name: Release kubectl plugin
+
+on:
+  release:
+    types:
+      - published
+
+jobs:
+  kubectl-pr:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Update the kubectl plugin manifest
+        run: |
+          cd kubectl-plugin
+          yq -i '.spec.version = "${{ github.event.release.tag_name }}"' log2rbac.yaml
+          yq -i '.spec.platforms[0].uri = "https://github.com/jkremser/log2rbac-operator/archive/${{ github.ref }}.zip"' log2rbac.yaml
+          _sha256=$(curl -Ls https://github.com/jkremser/log2rbac-operator/archive/${{ github.ref }}.zip  -o- | shasum -a 256 | cut -d' ' -f1)
+          yq -i '.spec.platforms[0].sha256 = "'${_sha256}'"' log2rbac.yaml
+
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v3
+        with:
+          title: "Update Kubectl Plugin - ${{ github.event.release.tag_name }}"
+          branch: kubectl-plugin-${{ github.ref }}
+          delete-branch: true
+          base: master
+          signoff: true
+          token: ${{ secrets.RELEASER_TOKEN }}
+          body: |
+            :package: Updating kubectl plugin :package:
+
+            new yaml manifest for release `${{ github.event.release.tag_name }}`
+
+            This automated PR was created by [this action][1].
+
+            [1]: https://github.com/jkremser/log2rbac-operator/actions/runs/${{ github.run_id }}
+
+      - name: Check PR
+        run: |
+          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
+          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
