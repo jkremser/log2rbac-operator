@@ -51,4 +51,4 @@ checksum:
 snapshot:
   name_template: "{{ .Version }}-{{ .ShortCommit }}"
 release:
-  draft: true
+  draft: false
