@@ -21,6 +21,9 @@ testbin/*
 # goreleaser
 /dist
 
+# required by goreleaser (otherwise won't release)
+changes
+
 #semgrep
 semgrep.sarif
 
