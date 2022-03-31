@@ -1,0 +1,52 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    runs-on: ubuntu-20.04
+    env:
+      DOCKER_CLI_EXPERIMENTAL: "enabled"
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Get tag
+        id: get_tag
+        run: |
+          previous_tag=$(git tag --sort=v:refname | tail -2 | head -1)
+          echo "::set-output name=previous_tag::${previous_tag}"
+      - uses: heinrichreimer/github-changelog-generator-action@v2.2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          project: log2rbac-operator
+          sinceTag: ${{ steps.get_tag.outputs.previous_tag }}
+          output: changes
+          pullRequests: true
+          author: true
+          issues: true
+          issuesWoLabels: true
+          prWoLabels: true
+          compareLink: true
+          filterByMilestone: true
+          unreleased: true
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17.6
+      - name: Login to Dockerhub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v2
+        with:
+          version: v1.7.0
+          args: release --rm-dist --release-notes=changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

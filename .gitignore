@@ -18,6 +18,9 @@ testbin/*
 *.swo
 *~
 
+# goreleaser
+/dist
+
 #semgrep
 semgrep.sarif
 

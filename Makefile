@@ -81,7 +81,7 @@ GIT_COMMIT := $(shell git rev-list -1 HEAD)
 
 .PHONY: container-img
 container-img: ## Build container image with the manager.
-	docker build --build-arg GOLANG_VERSION=$(GOLANG_VERSION) --build-arg GIT_SHA=$(GIT_SHA) --build-arg VERSION=$(VERSION) -t $(IMG) .
+	docker build --build-arg GOLANG_VERSION=$(GOLANG_VERSION) --build-arg GIT_SHA=$(GIT_SHA) --build-arg VERSION=$(VERSION) -f Dockerfile.multistage -t $(IMG) .
 
 ##@ Deployment
 
