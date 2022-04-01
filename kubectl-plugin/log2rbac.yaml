@@ -29,6 +29,8 @@ spec:
           to: "."
         - from: "log2rbac-operator-*/LICENSE"
           to: "."
+        - from: "log2rbac-operator-*/VERSION"
+          to: "."
         - from: "log2rbac-operator-*/kubectl-plugin/README.md"
           to: "."
       bin: kubectl-log2rbac

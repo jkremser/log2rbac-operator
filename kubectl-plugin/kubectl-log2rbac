@@ -83,6 +83,7 @@ printHelp() {
   echo
   echo "Available args:"
   echo " -h, --help                       Prints the help about the plugin (this output)"
+  echo " -v, --version                    Prints the help about the plugin (this output)"
   echo " -n <ns> <kind> <resourceName>    Creates the CR for operator and initiates the RBAC negotiation process"
   echo "                                    - <ns>   is a valid k8s namespace that is available in the current context"
   echo "                                    - <kind> is one of the following: deployment, replicaset, statefulset, daemonset, service"
@@ -96,6 +97,14 @@ printHelp() {
   echo
 }
 
+printVersion() {
+  [ "$(uname)" == "Darwin" ] && {
+    cat $(dirname `readlink $0`)/VERSION
+  } || {
+    cat $(dirname `readlink -f $0`)/VERSION
+  }
+}
+
 [[ $# == 0 ]] && {
     ! which fzf > /dev/null && echo "Install fzf, this plugin needs it" && exit 1
     ! which kubectl > /dev/null && echo "Install kubectl, this plugin needs it" && exit 2
@@ -106,6 +115,7 @@ printHelp() {
 for param in "$@"; do
     [[ $resNext == "2" ]] && echo "too many arguments" && printHelp && exit 1
     ([ $param == "-h" ] || [ $param == "--help" ]) && printHelp && exit 1
+    ([ $param == "-v" ] || [ $param == "--version" ]) && printVersion && exit 1
     [[ $nsNext == "1" ]] && ns=$param && nsNext=0 && continue
     [[ $resNext == "1" ]] && res=$param && resNext=2 && continue
     ([ $param == "-n" ] || [ $param == "--namespace" ]) && nsNext=1 && continue
