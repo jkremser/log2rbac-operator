@@ -23,7 +23,7 @@ jobs:
         uses: peter-evans/create-pull-request@v3
         with:
           title: "Update Kubectl Plugin - ${{ github.event.release.tag_name }}"
-          branch: kubectl-plugin-${{ github.ref }}
+          branch: kubectl-plugin-${{ github.event.release.tag_name }}
           delete-branch: true
           base: master
           signoff: true
