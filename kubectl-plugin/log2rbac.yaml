@@ -3,7 +3,7 @@ kind: Plugin
 metadata:
   name: log2rbac
 spec:
-  version: "v0.0.2"
+  version: "v0.0.3"
   homepage: https://github.com/jkremser/log2rbac-operator/tree/master/kubectl-plugin
   shortDescription: "Fine-tune your RBAC using log2rbac operator"
   description: |
@@ -21,9 +21,9 @@ spec:
             values:
               - darwin
               - linux
-      uri: https://github.com/jkremser/log2rbac-operator/archive/v0.0.2.zip
+      uri: https://github.com/jkremser/log2rbac-operator/archive/refs/tags/v0.0.3.zip
       # 'sha256' is the sha256sum of the zip from url above (shasum -a 256 ..zip)
-      sha256: 69e4e4740a2ebbd14b9d33713f1405cd0a7047778d976b4add46d3bbfe2ea63f
+      sha256: dfd4db32acceca8c643098600fd0fc8dadfa3c42692e5a03214fec7d6175c629
       files:
         - from: "log2rbac-operator-*/kubectl-plugin/kubectl-log2rbac"
           to: "."
