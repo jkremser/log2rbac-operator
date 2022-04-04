@@ -25,18 +25,24 @@ dockers:
       - "ghcr.io/jkremser/{{ .ProjectName }}:v{{ .Version }}-amd64"
     build_flag_templates:
       - "--platform=linux/amd64"
-      - "--label=org.opencontainers.image.title={{ .ProjectName }}"
-      - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
-      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - &LABEL1
+        "--label=org.opencontainers.image.title={{ .ProjectName }}"
+      - &LABEL2
+        "--label=org.opencontainers.image.description=K8s operator that helps you to set up your RBAC rules correctly"
+      - &LABEL3
+        "--label=org.opencontainers.image.revision={{ .FullCommit }}"
+      - &LABEL4
+        "--label=org.opencontainers.image.version={{ .Version }}"
   - image_templates:
       - "docker.io/jkremser/{{ .ProjectName }}:v{{ .Version }}-arm64"
       - "ghcr.io/jkremser/{{ .ProjectName }}:v{{ .Version }}-arm64"
     goarch: arm64
     build_flag_templates:
       - "--platform=linux/arm64"
-      - "--label=org.opencontainers.image.title={{ .ProjectName }}"
-      - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
-      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - *LABEL1
+      - *LABEL2
+      - *LABEL3
+      - *LABEL4
 docker_manifests:
   - name_template: docker.io/jkremser/{{ .ProjectName }}:{{ .Tag }}
     image_templates:
