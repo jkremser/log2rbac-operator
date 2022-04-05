@@ -17,7 +17,6 @@ jobs:
           yq -i '.spec.platforms[0].uri = "https://github.com/jkremser/log2rbac-operator/archive/${{ github.ref }}.zip"' log2rbac.yaml
           _sha256=$(curl -Ls https://github.com/jkremser/log2rbac-operator/archive/${{ github.ref }}.zip  -o- | shasum -a 256 | cut -d' ' -f1)
           yq -i '.spec.platforms[0].sha256 = "'${_sha256}'"' log2rbac.yaml
-          echo ${{ github.event.release.tag_name }} > VERSION
 
       - name: Create Pull Request
         id: cpr
@@ -33,6 +32,8 @@ jobs:
             :package: Updating kubectl plugin :package:
 
             new yaml manifest for release `${{ github.event.release.tag_name }}`
+            Make sure the version is correctly set in VERSION file.
+            This needs to be done before creating the tag for release.
 
             This automated PR was created by [this action][1].
 

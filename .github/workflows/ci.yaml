@@ -28,6 +28,8 @@ jobs:
         uses: golangci/golangci-lint-action@v2.5.2
         with:
           version: v1.42.1
+          skip-go-installation: true
+          skip-pkg-cache: true
           args: --timeout=120s
 
       - name: gokart
