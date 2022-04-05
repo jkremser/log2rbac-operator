@@ -23,7 +23,7 @@ spec:
               - linux
       uri: https://github.com/jkremser/log2rbac-operator/archive/refs/tags/v0.0.3.zip
       # 'sha256' is the sha256sum of the zip from url above (shasum -a 256 ..zip)
-      sha256: 8bfba8995512824f1e7077f9ba1075270900705bb7e21d9e2d06fc8b7f0a21e2
+      sha256: cfb16477eafad55b83c08d96b9df38ca0968ef242208002a130c99b4e326c9e3
       files:
         - from: "log2rbac-operator-*/kubectl-plugin/kubectl-log2rbac"
           to: "."
