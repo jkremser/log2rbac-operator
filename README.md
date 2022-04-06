@@ -7,8 +7,16 @@
 # log2rbac-operator
 Kubernetes operator that helps you to set up the RBAC rules for your application. If requested, it scans the application's log files
 for authorization errors and adds them as exceptions/rights to the associated `Role`. User have to allow this process by creating a
-`RbacNegotiation` custom resource where they need to specify the app (only Deployments are currently supported) and `Role`.
-Role can be either existing one or operator can create a new one for you and bind it to the service account that's configured with the deployment.
+`RbacNegotiation` custom resource where they need to specify the app[*](#clarify) and `Role`.
+Role can be either existing one or operator can create a new one for you and bind it to the service account that's configured with the deployment. Again if the service account is not there, it will be created by the operator.
+
+<a name="clarify"></a>* App can be one of the following:
+- Deployment
+- StatefulSet
+- DaemonSet
+- Service
+- ReplicaSet
+- or key-value pair specifying the pod selector
 
 
 ## Quick Start
@@ -42,3 +50,14 @@ spec:
     createIfNotExist: true
 CustomResource
 ```
+
+## Kubectl Plugin
+
+Installation:
+```bash
+kubectl krew install log2rbac
+```
+
+It can help with creating those `RbacNegotiation` custom resources by interactive TUI api.
+
+It's located in [this repo](./kubectl-plugin)
