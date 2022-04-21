@@ -8,6 +8,7 @@ ENVTEST_K8S_VERSION = 1.22
 LAST_VERSION ?= $(shell git describe --tags --abbrev=0)
 GIT_SHA ?= $(shell git rev-parse --short HEAD)
 VERSION ?= $(LAST_VERSION)-$(GIT_SHA)
+OTEL_VERSION ?= v0.48.0
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -101,6 +102,18 @@ deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in
 .PHONY: undeploy
 undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/config.
 	$(KUSTOMIZE) build config/default | kubectl delete --ignore-not-found=false -f -
+
+.PHONY: deploy-otel
+deploy-otel: ## Deploy OpenTelemetry collector
+	$(KUSTOMIZE) build config/otel | kubectl apply -f -
+#	kubectl apply -n log2rbac -f https://raw.githubusercontent.com/open-telemetry/opentelemetry-collector/$(OTEL_VERSION)/examples/k8s/otel-config.yaml
+#	kubectl -n log2rbac set env deploy/log2rbac -c manager OTEL_EXPORTER_OTLP_ENDPOINT=otel-collector.log2rbac:4318 TRACING_ENABLED=true
+
+.PHONY: undeploy-otel
+undeploy-otel: ## Undeploy OpenTelemetry collector
+	$(KUSTOMIZE) build config/otel | kubectl delete --ignore-not-found=false -f -
+#	kubectl delete -n log2rbac --ignore-not-found=false -f https://raw.githubusercontent.com/open-telemetry/opentelemetry-collector/$(OTEL_VERSION)/examples/k8s/otel-config.yaml
+#	kubectl -n log2rbac set env deploy/log2rbac -c manager OTEL_EXPORTER_OTLP_ENDPOINT- TRACING_ENABLED-
 
 CONTROLLER_GEN = $(shell pwd)/bin/controller-gen
 .PHONY: controller-gen

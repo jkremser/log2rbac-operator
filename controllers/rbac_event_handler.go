@@ -39,8 +39,8 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
+	semconv "go.opentelemetry.io/otel/semconv/v1.6.1"
 	"go.opentelemetry.io/otel/trace"
-
 )
 
 // RbacEventHandler handles the CRUD event from CR
@@ -49,6 +49,7 @@ type RbacEventHandler struct {
 	clientset *kubernetes.Clientset
 	Recorder  record.EventRecorder
 	Config    *internal.Config
+	Tracer	  trace.Tracer
 }
 
 // AppInfo bundles the application specific information including logs, service account and list of live pods
@@ -58,11 +59,19 @@ type AppInfo struct {
 	livePods       []core.Pod
 }
 
+// Setup Add some initialization stuff in here
+func (r *RbacEventHandler) Setup() {
+	r.Tracer = otel.GetTracerProvider().Tracer(
+			"github.com/jkremser/log2rbac-operator",
+			trace.WithInstrumentationVersion(r.Config.App.Version),
+			trace.WithSchemaURL(semconv.SchemaURL))
+}
+
 func (r *RbacEventHandler) handleResource(ctx context.Context, resource kremserv1.RbacNegotiation) ctrl.Result {
 	// tracing
 	// todo: sidecar otel collector
 	// todo: https://medium.com/opentelemetry/deploying-the-opentelemetry-collector-on-kubernetes-2256eca569c9
-	newCtx, span := otel.Tracer("log2rbac").Start(ctx, "handleResource")
+	newCtx, span := r.Tracer.Start(ctx, "handleResource")
 	span.SetAttributes(attribute.String("resource.name", resource.Name))
 	span.SetAttributes(attribute.String("resource.ns", resource.Namespace))
 	defer span.End()
@@ -113,7 +122,7 @@ func (r *RbacEventHandler) handleResource(ctx context.Context, resource kremserv
 }
 
 func (r *RbacEventHandler) restartPods(ctx context.Context, pods []core.Pod) {
-	_, span := otel.Tracer("log2rbac").Start(ctx, "restartPods")
+	_, span := r.Tracer.Start(ctx, "restartPods")
 	defer span.End()
 	for _, pod := range pods {
 		if err := r.Client.Delete(ctx, &pod); err != nil {
@@ -124,7 +133,7 @@ func (r *RbacEventHandler) restartPods(ctx context.Context, pods []core.Pod) {
 
 func (r *RbacEventHandler) addMissingRbacEntry(ctx context.Context, ns string, sa string, entry *RbacEntry, role kremserv1.RoleSpec) error {
 	var span trace.Span
-	ctx, span = otel.Tracer("log2rbac").Start(ctx, "addMissingRbacEntry")
+	ctx, span = r.Tracer.Start(ctx, "addMissingRbacEntry")
 	span.SetAttributes(attribute.String("entry.verb", entry.Verb))
 	span.SetAttributes(attribute.String("entry.kind", entry.Object.Kind))
 	defer span.End()
@@ -142,7 +151,7 @@ func (r *RbacEventHandler) addMissingRbacEntry(ctx context.Context, ns string, s
 				Rules: []rbac.PolicyRule{rbacEntryToPolicyRule(entry)},
 			}
 			rol.SetName(role.Name)
-			c, clusterRoleSpan := otel.Tracer("log2rbac").Start(ctx, "createClusterRole")
+			c, clusterRoleSpan := r.Tracer.Start(ctx, "createClusterRole")
 			if err := r.Client.Create(c, rol); err != nil {
 				log.Log.Error(err, "Unable to create cluster role")
 				return err
@@ -162,7 +171,7 @@ func (r *RbacEventHandler) addMissingRbacEntry(ctx context.Context, ns string, s
 				},
 			}
 			rb.SetName(role.Name + "-binding")
-			c, clusterRoleBSpan := otel.Tracer("log2rbac").Start(c, "createClusterRoleBinding")
+			c, clusterRoleBSpan := r.Tracer.Start(c, "createClusterRoleBinding")
 			if err := r.Client.Create(ctx, rb); err != nil && !errors.IsAlreadyExists(err) {
 				log.Log.Error(err, "Unable to create cluster role binding")
 				return err
@@ -172,7 +181,7 @@ func (r *RbacEventHandler) addMissingRbacEntry(ctx context.Context, ns string, s
 		}
 		// todo: consolidate the rules
 		crol.Rules = append(crol.Rules, rbacEntryToPolicyRule(entry))
-		c, clusterRoleUpSpan := otel.Tracer("log2rbac").Start(ctx, "updateClusterRole")
+		c, clusterRoleUpSpan := r.Tracer.Start(ctx, "updateClusterRole")
 		if err := r.Client.Update(c, &crol); err != nil {
 			log.Log.Error(err, "Unable to update cluster role")
 		}
@@ -191,7 +200,7 @@ func (r *RbacEventHandler) addMissingRbacEntry(ctx context.Context, ns string, s
 			}
 			rol.SetName(role.Name)
 			rol.SetNamespace(ns)
-			c, roleSpan := otel.Tracer("log2rbac").Start(ctx, "createRole")
+			c, roleSpan := r.Tracer.Start(ctx, "createRole")
 			if err := r.Client.Create(c, rol); err != nil {
 				log.Log.Error(err, "Unable to create role")
 				return err
@@ -212,7 +221,7 @@ func (r *RbacEventHandler) addMissingRbacEntry(ctx context.Context, ns string, s
 			}
 			rb.SetName(role.Name + "-binding")
 			rb.SetNamespace(ns)
-			c, roleBSpan := otel.Tracer("log2rbac").Start(c, "createClusterRoleBinding")
+			c, roleBSpan := r.Tracer.Start(c, "createClusterRoleBinding")
 			if err := r.Client.Create(c, rb); err != nil && !errors.IsAlreadyExists(err) {
 				log.Log.Error(err, "Unable to create role binding")
 				return err
@@ -221,7 +230,7 @@ func (r *RbacEventHandler) addMissingRbacEntry(ctx context.Context, ns string, s
 			return nil
 		}
 		nrol.Rules = append(nrol.Rules, rbacEntryToPolicyRule(entry))
-		c, roleUpSpan := otel.Tracer("log2rbac").Start(ctx, "updateClusterRole")
+		c, roleUpSpan := r.Tracer.Start(ctx, "updateClusterRole")
 		if err := r.Client.Update(c, &nrol); err != nil {
 			log.Log.Error(err, "Unable to update role")
 		}
@@ -240,7 +249,7 @@ func rbacEntryToPolicyRule(entry *RbacEntry) rbac.PolicyRule {
 
 func (r *RbacEventHandler) getAppInfo(ctx context.Context, resource kremserv1.RbacNegotiationSpec) (*AppInfo, error) {
 	// tracing
-	_, span := otel.Tracer("log2rbac").Start(ctx, "getAppInfo")
+	_, span := r.Tracer.Start(ctx, "getAppInfo")
 	defer span.End()
 
 	forS := resource.For
@@ -302,7 +311,7 @@ func (r *RbacEventHandler) getAppInfo(ctx context.Context, resource kremserv1.Rb
 }
 
 func (r *RbacEventHandler) createSAIfNotExists(ctx context.Context, saName string, ns string) {
-	_, span := otel.Tracer("log2rbac").Start(ctx, "createServiceAccount")
+	_, span := r.Tracer.Start(ctx, "createServiceAccount")
 	defer span.End()
 	sa := core.ServiceAccount{}
 	if err := r.Client.Get(ctx, client.ObjectKey{Name: saName, Namespace: ns}, &sa); err != nil && errors.IsNotFound(err) {

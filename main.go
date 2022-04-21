@@ -64,6 +64,10 @@ func main() {
 	var cfg internal.Config
 	err := envconfig.Process(ctx, &cfg)
 	internal.SetupLog(cfg.Log)
+	cfg.App = &internal.AppConfig {
+		Version: version,
+		GitSha: gitSha,
+	}
 	if err != nil {
 		setupLog.Error(err, "unable to load config")
 	}
@@ -105,6 +109,11 @@ func main() {
 	setupLog.Info("is starting..")
 	internal.PrintInfo(setupLog, version)
 	setupLog.Info("gitsha", "sha", gitSha)
+
+	// tracing
+	cleanup := internal.SetupTracing(cfg, ctx, setupLog)
+	defer cleanup()
+
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running log2rbac")
 		os.Exit(1)
