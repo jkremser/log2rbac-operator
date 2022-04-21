@@ -61,3 +61,38 @@ kubectl krew install log2rbac
 It can help with creating those `RbacNegotiation` custom resources by interactive TUI api.
 
 It's located in [this repo](./kubectl-plugin)
+
+## Observability
+
+Operator's code has been instrumented by ~OpenTracing~ OpenTelemetry calls so that one can export the spans to Jaeger or Zipkin and
+connect the dots. There is an example deployment using open telemetry collector running as a side-car container that exports the traces
+to Jaeger that runs in its own deployment. To deploy this scenario, issue:
+
+```bash
+make deploy-otel
+```
+
+To check the Jaeger web UI for `log2rbac` traces, the easiest way is to
+
+```bash
+k port-forward `k get pod -lid=jaeger --no-headers -o custom-columns=":metadata.name"` 16686
+open http://localhost:16686
+```
+
+![Jaeger + log2rbac screenshot](/docs/log2rbac-jaeger.png)
+
+## Configuration
+
+Following options are available as env variables for the operator:
+
+| Variable name                               | Description                                           | default value | 
+|---------------------------------------------|-------------------------------------------------------|---------------|
+| `COLORS`                                    | whether the colorful output in logs should be used    | `true`        |
+| `NO_BANNER`                                 | whether no ascii art should be printed during start   | `false`       |
+| `SYNC_INTERVAL_AFTER_NO_RBAC_ENTRY_MINUTES` | if no rbac related entry was found in logs, how long to wait for the next check   | `5`       |
+| `SYNC_INTERVAL_AFTER_NO_LOGS_SECONDS`       | if it was not possible to get the logs, how long to wait for the next check       | `30`      |
+| `SYNC_INTERVAL_AFTER_POD_RESTART_SECONDS`   | how long to wait after rbac entry was added and pod was restarted by the operator | `20`      |
+| `SHOULD_RESTART_APP_PODS`                   | whether the operator should be restarting the pods after modifying the role       | `true`    |
+| `TRACING_ENABLED`                           | if the application should be sending the traces to OTLP collector          | `false`          |
+| `OTEL_EXPORTER_OTLP_ENDPOINT`               | `host:port` where the spans (traces) should be sent                        | `localhost:4318` |
+| `TRACING_SAMPLING_RATIO`                    | `float64` representing the ratio how often the span should be kept/dropped | `true`           |

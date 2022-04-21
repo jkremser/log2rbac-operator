@@ -2,6 +2,7 @@ package internal
 
 import (
 	"context"
+	"fmt"
 	"github.com/go-logr/logr"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
@@ -29,8 +30,9 @@ func SetupTracing(cfg Config, ctx context.Context, log logr.Logger) func() {
 	var samplerOption sdktrace.TracerProviderOption
 	if r, err := strconv.ParseFloat(cfg.Tracing.SamplingRatio, 64); err == nil {
 		samplerOption = sdktrace.WithSampler(sdktrace.TraceIDRatioBased(r))
-		log.Info( "Tracing: sampling ratio is not specified, using AlwaysSample")
+		log.Info(fmt.Sprintf( "Tracing: sampling ratio is set to '%f'", r))
 	} else {
+		log.Info( "Tracing: sampling ratio is not specified, using AlwaysSample")
 		samplerOption = sdktrace.WithSampler(sdktrace.AlwaysSample())
 	}
 
