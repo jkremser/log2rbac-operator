@@ -1,10 +1,10 @@
 # build args
 ARG GOLANG_VERSION=1.17.5
-ARG GIT_SHA=unknown
-ARG VERSION=unknown
 
 # Build the log2rbac binary
 FROM docker.io/golang:${GOLANG_VERSION} as builder
+ARG GIT_SHA=unknown
+ARG VERSION=unknown
 
 WORKDIR /workspace
 COPY go.mod go.mod
@@ -16,6 +16,10 @@ COPY main.go main.go
 COPY api/ api/
 COPY controllers/ controllers/
 COPY internal/ internal/
+
+ENV GOLANG_VERSION=${GOLANG_VERSION} \
+    GIT_SHA=${GIT_SHA} \
+    VERSION=${VERSION}
 
 # Build
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags "-w -s -X main.gitSha=${GIT_SHA} -X main.version=${VERSION}" -a -o log2rbac main.go

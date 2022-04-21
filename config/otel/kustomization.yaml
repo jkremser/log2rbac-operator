@@ -1,3 +1,13 @@
-resources:
-- monitor.yaml
+namespace: log2rbac
 
+bases:
+  - ../manager
+
+patchesStrategicMerge:
+  - manager_otel_collector_patch.yaml
+
+resources:
+  - otel-config.yaml
+  - otel-svc.yaml
+  - jaeger-svc.yaml
+  - jaeger-deployment.yaml

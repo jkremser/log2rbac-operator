@@ -1,13 +1,17 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: opentelemetrycollector
+  name: otel-collector
 spec:
   ports:
+    - name: http-otlp
+      port: 4318
+      protocol: TCP
+      targetPort: 4318
     - name: grpc-otlp
       port: 4317
       protocol: TCP
       targetPort: 4317
   selector:
-    app.kubernetes.io/name: log2rbac-operator
+    id: log2rbac
   type: ClusterIP

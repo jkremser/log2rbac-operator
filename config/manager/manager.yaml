@@ -26,7 +26,7 @@ spec:
         id: log2rbac
     spec:
       securityContext:
-        runAsNonRoot: true
+        runAsNonRoot: false
       containers:
       - command:
         - /log2rbac
@@ -38,7 +38,7 @@ spec:
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
-          runAsNonRoot: true
+          runAsNonRoot: false
         livenessProbe:
           httpGet:
             path: /healthz
