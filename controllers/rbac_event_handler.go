@@ -169,7 +169,7 @@ func (r *RbacEventHandler) addMissingRbacEntry(ctx context.Context, ns string, s
 				},
 			}
 			rb.SetName(role.Name + "-binding")
-			c, clusterRoleBSpan := r.Tracer.Start(c, "createClusterRoleBinding")
+			_, clusterRoleBSpan := r.Tracer.Start(c, "createClusterRoleBinding")
 			if err := r.Client.Create(ctx, rb); err != nil && !errors.IsAlreadyExists(err) {
 				log.Log.Error(err, "Unable to create cluster role binding")
 				return err
