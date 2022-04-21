@@ -69,8 +69,6 @@ func (r *RbacEventHandler) Setup() {
 
 func (r *RbacEventHandler) handleResource(ctx context.Context, resource kremserv1.RbacNegotiation) ctrl.Result {
 	// tracing
-	// todo: sidecar otel collector
-	// todo: https://medium.com/opentelemetry/deploying-the-opentelemetry-collector-on-kubernetes-2256eca569c9
 	newCtx, span := r.Tracer.Start(ctx, "handleResource")
 	span.SetAttributes(attribute.String("resource.name", resource.Name))
 	span.SetAttributes(attribute.String("resource.ns", resource.Namespace))
