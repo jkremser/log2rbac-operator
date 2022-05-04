@@ -1,0 +1,46 @@
+apiVersion: v2
+name: log2rbac-operator
+description: A Helm chart for log2rbac Kubernetes operator
+icon: todo
+type: application
+version: 0.0.1
+appVersion: "0.0.3"
+kubeVersion: ">= 1.14.0-0"
+
+home: https://jkremser.github.io/log2rbac-operator
+sources:
+  - https://github.com/jkremser/log2rbac-operator
+
+keywords:
+  - rbac
+  - kubernetes
+  - operator
+  - kubernetes-operator
+
+maintainers:
+  - email: jiri.kremser@gmail.com
+    name: Jiri Kremser
+
+annotations:
+  artifacthub.io/operator: "true"
+  artifacthub.io/operatorCapabilities: Seamless Upgrades
+  artifacthub.io/crds: |
+    - kind: RbacNegotiation
+      version: v1
+      name: rbacnegotiations.kremser.dev
+      displayName: RbacNegotiation
+      description: Requests the rbac negotiation process for given application
+  artifacthub.io/crdsExamples: |
+    - apiVersion: kremser.dev/v1
+      kind: RbacNegotiation
+      metadata:
+        name: for-prometheus-operator
+      spec:
+        for:
+          namespace: monitoring
+          kind: Deployment
+          name: prometheus-operator
+        role:
+          name: prometheus-operator-role
+          isClusterRole: true
+          createIfNotExist: true

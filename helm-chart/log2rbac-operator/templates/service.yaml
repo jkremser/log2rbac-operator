@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    control-plane: log2rbac
+    {{- include "log2rbac-operator.labels" . | nindent 4 }}
+  name: log2rbac-metrics-service
+  namespace: log2rbac
+spec:
+  ports:
+  - name: https
+    port: 8443
+    protocol: TCP
+    targetPort: https
+  selector:
+    control-plane: log2rbac
