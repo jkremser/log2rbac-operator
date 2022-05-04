@@ -9,7 +9,8 @@ fullnameOverride: ""
 deploy:
   rbac: true # whether the rbac resources should be also deployed (ServiceAccount, ClusterRole, ClusterRoleBinding)
   operator: true # whether the operator itself should be deployed (Deployment)
-  service: true # whether the service for metrics should be deployed (Service)
+  service: true # whether the service for metrics and open-telemetry should be deployed (Service)
+  jaeger: false # whether the jaeger should be deployed with the operator (use together with `tracing.enabled = true`)
 
 image:
   # container image repo (can be prepended by image registry)
@@ -44,6 +45,10 @@ tracing:
   # float representing the ratio of how often the span should be kept/dropped (env var `TRACING_SAMPLING_RATIO`)
   # if not specified, the AlwaysSample will be used which is the same as 1.0. `0.1` would mean that 10% of samples will be kept
   samplingRatio: null
+
+  sidecarImage:
+    repository: otel/opentelemetry-collector
+    tag: 0.48.0
 
 # operator specific settings
 operator:

@@ -1,0 +1,27 @@
+{{- if .Values.tracing.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agent-config
+  namespace: log2rbac
+data:
+  agent.yaml: |
+    receivers:
+      otlp:
+        protocols:
+          http:
+          grpc:
+    processors:
+    exporters:
+      jaeger:
+        endpoint: jaeger-collector.log2rbac:14250
+        tls:
+          insecure: true
+      logging:
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: []
+          exporters: [jaeger]
+{{- end }}
