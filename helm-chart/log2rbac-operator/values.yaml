@@ -1,82 +1,98 @@
 # Default values for log2rbac-operator.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
 
-replicaCount: 1
 
-image:
-  repository: nginx
-  pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
-
-imagePullSecrets: []
+# chart specific
 nameOverride: ""
 fullnameOverride: ""
 
-serviceAccount:
-  # Specifies whether a service account should be created
-  create: true
-  # Annotations to add to the service account
-  annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
-  name: ""
+# what should be deployed
+deploy:
+  rbac: true # whether the rbac resources should be also deployed (ServiceAccount, ClusterRole, ClusterRoleBinding)
+  operator: true # whether the operator itself should be deployed (Deployment)
+  service: true # whether the service for metrics should be deployed (Service)
 
+image:
+  # container image repo (can be prepended by image registry)
+  repository: jkremser/log2rbac
+
+  # translates to pod's `spec.imagePullPolicy`
+  pullPolicy: Always
+
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+metrics:
+  # should the metrics be enabled (additional arg for log2rbac binary)
+  enabled: true
+
+  # on which port the metrics server should listen
+  port: 8080
+
+  # typeof the service for metrics (ClusterIP, NodePort, LoadBalancer). Consult https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
+  serviceType: NodePort
+
+  # Port on node that will be used for metrics. This make sense only for serviceType = NodePort, otherwise it's ignored
+  nodePort: 30081
+
+tracing:
+  # if the application should be sending the traces to OTLP collector (env var `TRACING_ENABLED`)
+  enabled: false
+
+  # `host:port` where the spans (traces) should be sent, sets the `OTEL_EXPORTER_OTLP_ENDPOINT` env var
+  endpoint: localhost:4318
+
+  # float representing the ratio of how often the span should be kept/dropped (env var `TRACING_SAMPLING_RATIO`)
+  # if not specified, the AlwaysSample will be used which is the same as 1.0. `0.1` would mean that 10% of samples will be kept
+  samplingRatio: null
+
+# operator specific settings
+operator:
+  colors: true # should the logs be colorcul (env var `COLORS`)
+  noBanner: false # should the ascii logo be printed in the logs (env var `NO_BANNER`)
+
+  # whether the operator should be restarting the pods after modifying the role (env var `SHOULD_RESTART_APP_PODS`)
+  # if not set defaults to `true`
+  restartPods : true
+
+  syncIntervals:
+    # if no rbac related entry was found in logs, how long to wait for the next check (env var `SYNC_INTERVAL_AFTER_NO_RBAC_ENTRY_MINUTES`)
+    # value represents the number of minutes
+    afterNoRbacEntry: 5
+
+    # if it was not possible to get the logs, how long to wait for the next check (env var `SYNC_INTERVAL_AFTER_NO_LOGS_SECONDS`)
+    # value represents the number of seconds
+    afterNoLogs: 30
+
+    # how long to wait after rbac entry was added and pod was restarted by the operator (env var `SYNC_INTERVAL_AFTER_POD_RESTART_SECONDS`)
+    # value represents the number of seconds
+    afterPodRestart: 20
+
+# additional annotations that will be applied on operator's pod
 podAnnotations: {}
 
-podSecurityContext: {}
-  # fsGroup: 2000
+# additional labels that will be applied on operator's pod
+podLabels: {}
 
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
+imagePullSecrets: []
+podSecurityContext:
   # runAsNonRoot: true
-  # runAsUser: 1000
 
-service:
-  type: ClusterIP
-  port: 80
+securityContext:
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  # runAsNonRoot: true
 
-ingress:
-  enabled: false
-  className: ""
-  annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
-  hosts:
-    - host: chart-example.local
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
-
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
-
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
+resources:
+  limits:
+    cpu: 500m
+    memory: 128Mi
+  requests:
+    cpu: 10m
+    memory: 64Mi
 
 nodeSelector: {}
-
 tolerations: []
-
 affinity: {}
