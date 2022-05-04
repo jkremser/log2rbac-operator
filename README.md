@@ -89,10 +89,10 @@ Following options are available as env variables for the operator:
 |---------------------------------------------|-------------------------------------------------------|---------------|
 | `COLORS`                                    | whether the colorful output in logs should be used    | `true`        |
 | `NO_BANNER`                                 | whether no ascii art should be printed during start   | `false`       |
-| `SYNC_INTERVAL_AFTER_NO_RBAC_ENTRY_MINUTES` | if no rbac related entry was found in logs, how long to wait for the next check   | `5`       |
-| `SYNC_INTERVAL_AFTER_NO_LOGS_SECONDS`       | if it was not possible to get the logs, how long to wait for the next check       | `30`      |
-| `SYNC_INTERVAL_AFTER_POD_RESTART_SECONDS`   | how long to wait after rbac entry was added and pod was restarted by the operator | `20`      |
-| `SHOULD_RESTART_APP_PODS`                   | whether the operator should be restarting the pods after modifying the role       | `true`    |
-| `TRACING_ENABLED`                           | if the application should be sending the traces to OTLP collector          | `false`          |
-| `OTEL_EXPORTER_OTLP_ENDPOINT`               | `host:port` where the spans (traces) should be sent                        | `localhost:4318` |
-| `TRACING_SAMPLING_RATIO`                    | `float64` representing the ratio how often the span should be kept/dropped | `true`           |
+| `SYNC_INTERVAL_AFTER_NO_RBAC_ENTRY_MINUTES` | if no rbac related entry was found in logs, how long to wait for the next check   | `5`           |
+| `SYNC_INTERVAL_AFTER_NO_LOGS_SECONDS`       | if it was not possible to get the logs, how long to wait for the next check       | `30`          |
+| `SYNC_INTERVAL_AFTER_POD_RESTART_SECONDS`   | how long to wait after rbac entry was added and pod was restarted by the operator | `20`          |
+| `SHOULD_RESTART_APP_PODS`                   | whether the operator should be restarting the pods after modifying the role       | `true`        |
+| `TRACING_ENABLED`                           | if the application should be sending the traces to OTLP collector          | `false`              |
+| `OTEL_EXPORTER_OTLP_ENDPOINT`               | `host:port` where the spans (traces) should be sent                        | `localhost:4318`     |
+| `TRACING_SAMPLING_RATIO`                    | `float64` representing the ratio how often the span should be kept/dropped | `AlwaysSample ~ 1.0` |
