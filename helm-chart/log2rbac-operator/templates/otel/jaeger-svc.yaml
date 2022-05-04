@@ -1,0 +1,25 @@
+{{- if .Values.deploy.jaeger }}
+{{- if .Values.deploy.service }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: jaeger-collector
+spec:
+  ports:
+    - name: dashboard
+      port: 16686
+      protocol: TCP
+      targetPort: 16686
+    - name: grpc-collector
+      port: 14250
+      protocol: TCP
+      targetPort: 14250
+    - name: thrift-collector
+      port: 14268
+      protocol: TCP
+      targetPort: 14268
+  selector:
+    id: jaeger
+  type: ClusterIP
+{{- end }}
+{{- end }}

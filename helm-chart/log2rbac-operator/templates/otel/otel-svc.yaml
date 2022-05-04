@@ -1,0 +1,21 @@
+{{- if .Values.deploy.service }}
+{{- if .Values.tracing.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: otel-collector
+spec:
+  ports:
+    - name: http-otlp
+      port: 4318
+      protocol: TCP
+      targetPort: 4318
+    - name: grpc-otlp
+      port: 4317
+      protocol: TCP
+      targetPort: 4317
+  selector:
+    id: log2rbac
+  type: ClusterIP
+{{- end }}
+{{- end }}

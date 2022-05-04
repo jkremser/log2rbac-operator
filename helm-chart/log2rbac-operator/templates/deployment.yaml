@@ -45,24 +45,26 @@ spec:
           value: {{ .noBanner | quote }}
         - name: SHOULD_RESTART_APP_PODS
           value: {{ .restartPods | quote }}
-        {{- with .syncIntervals }}
+          {{- with .syncIntervals }}
         - name: SYNC_INTERVAL_AFTER_NO_RBAC_ENTRY_MINUTES
           value: {{ .afterNoRbacEntry | quote }}
         - name: SYNC_INTERVAL_AFTER_NO_LOGS_SECONDS
           value: {{ .afterNoLogs | quote }}
         - name: SYNC_INTERVAL_AFTER_POD_RESTART_SECONDS
           value: {{ .afterPodRestart | quote }}
+          {{- end }}
         {{- end }}
-        {{- end }}
-        {{- with .Values.tracing }}
+        {{- if .Values.tracing.enabled }}
+          {{- with .Values.tracing }}
         - name: TRACING_ENABLED
           value: {{ .enabled | quote }}
         - name: OTEL_EXPORTER_OTLP_ENDPOINT
           value: {{ .endpoint | quote }}
-        {{- with .samplingRatio }}
+            {{- with .samplingRatio }}
         - name: TRACING_SAMPLING_RATIO
           value: {{ . | quote }}
-        {{- end }}
+            {{- end }}
+          {{- end }}
         {{- end }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         livenessProbe:
@@ -81,6 +83,22 @@ spec:
           {{- toYaml .Values.resources | nindent 10 }}
         securityContext:
           {{- toYaml .Values.securityContext | nindent 10 }}
+      {{- if .Values.tracing.enabled }}
+      - image: {{ .Values.tracing.sidecarImage.repository }}:{{ .Values.tracing.sidecarImage.tag }}
+        name: otel-collector
+        args:
+        - --config=/conf/agent.yaml
+        volumeMounts:
+        - mountPath: /conf
+          name: agent-config
+      volumes:
+      - configMap:
+          items:
+          - key: agent.yaml
+            path: agent.yaml
+          name: agent-config
+        name: agent-config
+      {{- end }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       serviceAccountName: log2rbac
