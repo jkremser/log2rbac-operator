@@ -1,3 +1,4 @@
+{{- if .Values.deploy.rbac }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -30,3 +31,4 @@ subjects:
   name: log2rbac
   namespace: log2rbac
 ---
+{{- end}}

@@ -1,16 +1,23 @@
+{{- if .Values.deploy.service }}
+{{- if .Values.metrics.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
   labels:
     control-plane: log2rbac
-    {{- include "log2rbac-operator.labels" . | nindent 4 }}
-  name: log2rbac-metrics-service
+  name: log2rbac-metrics
   namespace: log2rbac
 spec:
+  type: {{ .Values.metrics.serviceType }}
   ports:
-  - name: https
-    port: 8443
+  - name: http
+    port: {{ .Values.metrics.port }}
     protocol: TCP
-    targetPort: https
+    targetPort: {{ .Values.metrics.port }}
+    {{- if eq .Values.metrics.serviceType "NodePort" }}
+    nodePort: {{ .Values.metrics.nodePort }}
+    {{- end }}
   selector:
     control-plane: log2rbac
+{{- end }}
+{{- end }}
