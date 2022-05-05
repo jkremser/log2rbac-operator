@@ -28,6 +28,7 @@ spec:
       containers:
       - image: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
         name: manager
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
         command:
         - /log2rbac
         args:
@@ -66,7 +67,6 @@ spec:
             {{- end }}
           {{- end }}
         {{- end }}
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
         livenessProbe:
           httpGet:
             path: /healthz
@@ -86,6 +86,7 @@ spec:
       {{- if .Values.tracing.enabled }}
       - image: {{ .Values.tracing.sidecarImage.repository }}:{{ .Values.tracing.sidecarImage.tag }}
         name: otel-collector
+        imagePullPolicy: {{ .Values.tracing.sidecarImage.pullPolicy }}
         args:
         - --config=/conf/agent.yaml
         volumeMounts:

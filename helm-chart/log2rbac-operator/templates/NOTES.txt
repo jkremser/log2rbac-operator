@@ -10,3 +10,18 @@ continue with kubectl plugin:
 ```
 kubectl log2rbac
 ```
+
+{{- if and (and .Values.tracing.enabled .Values.deploy.jaeger) .Values.deploy.service }}
+
+To check the OpenTelemetry (tracing) data:
+------------------------------------------
+kubectl port-forward svc/jaeger-collector 16686
+open http://localhost:16686
+{{- end }}
+{{- if and .Values.metrics.enabled .Values.deploy.service }}
+
+To check the metrics in Prometheus format:
+------------------------------------------
+kubectl port-forward -n log2rbac svc/log2rbac-metrics {{ .Values.metrics.port }}
+open http://localhost:{{ .Values.metrics.port }}/metrics
+{{- end }}

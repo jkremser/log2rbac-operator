@@ -75,7 +75,7 @@ make deploy-otel
 To check the Jaeger web UI for `log2rbac` traces, the easiest way is to
 
 ```bash
-k port-forward `k get pod -lid=jaeger --no-headers -o custom-columns=":metadata.name"` 16686
+kubectl port-forward svc/jaeger-collector 16686
 open http://localhost:16686
 ```
 
