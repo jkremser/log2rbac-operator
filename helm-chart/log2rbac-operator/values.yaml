@@ -7,10 +7,14 @@ fullnameOverride: ""
 
 # -- what should be deployed
 deploy:
-  rbac: true # -- whether the rbac resources should be also deployed (ServiceAccount, ClusterRole, ClusterRoleBinding)
-  operator: true # -- whether the operator itself should be deployed (Deployment)
-  service: true # -- whether the service for metrics and open-telemetry should be deployed (Service)
-  jaeger: false # -- whether the jaeger should be deployed with the operator (use together with `tracing.enabled = true`)
+  # -- whether the rbac resources should be also deployed (ServiceAccount, ClusterRole, ClusterRoleBinding)
+  rbac: true
+  # -- whether the operator itself should be deployed (Deployment)
+  operator: true
+  # -- whether the service for metrics and open-telemetry should be deployed (Service)
+  service: true
+  # -- whether the jaeger should be deployed with the operator (use together with `tracing.enabled = true`)
+  jaeger: false
 
 image:
   # -- container image repo (can be prepended by image registry)
@@ -61,11 +65,13 @@ tracing:
 
 # -- operator specific settings
 operator:
-  colors: true # -- should the logs be colorcul (env var `COLORS`)
-  noBanner: false # -- should the ascii logo be printed in the logs (env var `NO_BANNER`)
+  # -- should the logs be colorcul (env var `COLORS`)
+  colors: true
+  # -- should the ascii logo be printed in the logs (env var `NO_BANNER`)
+  noBanner: false
 
   # -- whether the operator should be restarting the pods after modifying the role (env var `SHOULD_RESTART_APP_PODS`)
-  # -- if not set defaults to `true`
+  # if not set defaults to `true`
   restartPods : true
 
   syncIntervals:
