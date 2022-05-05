@@ -1,0 +1,18 @@
+name: Helm Publish
+
+on:
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: dave-mcconnell/helm-gh-pages-microservices@master
+        with:
+          access-token: ${{ secrets.RELEASER_TOKEN }}
+          source-charts-folder: 'helm-chart'
+          destination-repo: jkremser/log2rbac-operator
+          destination-branch: gh-pages
