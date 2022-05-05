@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
         - name: jaeger
-          image: jaegertracing/all-in-one
-          imagePullPolicy: Always
+          image: {{ .Values.tracing.jaegerImage.repository }}:{{ .Values.tracing.jaegerImage.tag }}
+          imagePullPolicy: {{ .Values.tracing.jaegerImage.pullPolicy }}
           readinessProbe:
             httpGet:
               path: "/"
