@@ -2,6 +2,7 @@
 [![GitHub release](https://img.shields.io/github/release/jkremser/log2rbac-operator/all.svg?style=flat-square)](https://github.com/jkremser/log2rbac-operator/releases) 
 [![Docker Pulls](https://img.shields.io/docker/pulls/jkremser/log2rbac.svg)](https://hub.docker.com/r/jkremser/log2rbac)
 [![Go Report Card](https://goreportcard.com/badge/github.com/jkremser/log2rbac-operator)](https://goreportcard.com/report/github.com/jkremser/log2rbac-operator)
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/log2rbac-operator)](https://artifacthub.io/packages/search?repo=log2rbac-operator)
 [![License: MIT](https://img.shields.io/badge/License-Apache_2.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
 
 # log2rbac-operator
