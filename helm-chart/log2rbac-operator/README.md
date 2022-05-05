@@ -74,9 +74,13 @@ helm upgrade -i log2rbac log2rbac/log2rbac-operator
 | tolerations | list | `[]` | https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/ |
 | tracing.enabled | bool | `false` | if the application should be sending the traces to OTLP collector (env var `TRACING_ENABLED`) |
 | tracing.endpoint | string | `"localhost:4318"` | `host:port` where the spans (traces) should be sent, sets the `OTEL_EXPORTER_OTLP_ENDPOINT` env var |
-| tracing.jaegerImage | object | `{"pullPolicy":"Always","repository":"jaegertracing/all-in-one","tag":"1.33.0"}` | if `deploy.jaeger==true` this image will be used in the deployment for Jaeger |
+| tracing.jaegerImage.pullPolicy | string | `"Always"` |  |
+| tracing.jaegerImage.repository | string | `"jaegertracing/all-in-one"` | if `deploy.jaeger==true` this image will be used in the deployment for Jaeger |
+| tracing.jaegerImage.tag | string | `"1.33.0"` |  |
 | tracing.samplingRatio | string | `nil` | float representing the ratio of how often the span should be kept/dropped (env var `TRACING_SAMPLING_RATIO`) if not specified, the AlwaysSample will be used which is the same as 1.0. `0.1` would mean that 10% of samples will be kept |
-| tracing.sidecarImage | object | `{"pullPolicy":"Always","repository":"otel/opentelemetry-collector","tag":"0.48.0"}` | OpenTelemetry collector into which the log2rbac operator sends the spans. It can be further configured to send its data to somewhere else using exporters (Jaeger for instance) |
+| tracing.sidecarImage.pullPolicy | string | `"Always"` |  |
+| tracing.sidecarImage.repository | string | `"otel/opentelemetry-collector"` | OpenTelemetry collector into which the log2rbac operator sends the spans. It can be further configured to send its data to somewhere else using exporters (Jaeger for instance) |
+| tracing.sidecarImage.tag | string | `"0.48.0"` |  |
 
 ## Requirements
 
