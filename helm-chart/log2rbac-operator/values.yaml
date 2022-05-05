@@ -50,15 +50,15 @@ tracing:
   # if not specified, the AlwaysSample will be used which is the same as 1.0. `0.1` would mean that 10% of samples will be kept
   samplingRatio: null
 
-  # -- OpenTelemetry collector into which the log2rbac operator sends the spans. It can be further configured to send its data
-  # to somewhere else using exporters (Jaeger for instance)
   sidecarImage:
+    # -- OpenTelemetry collector into which the log2rbac operator sends the spans. It can be further configured to send its data
+    # to somewhere else using exporters (Jaeger for instance)
     repository: otel/opentelemetry-collector
     tag: 0.48.0
     pullPolicy: Always
   
-  # -- if `deploy.jaeger==true` this image will be used in the deployment for Jaeger
   jaegerImage:
+    # -- if `deploy.jaeger==true` this image will be used in the deployment for Jaeger
     repository: jaegertracing/all-in-one
     tag: 1.33.0
     pullPolicy: Always
