@@ -5,7 +5,7 @@
 nameOverride: ""
 fullnameOverride: ""
 
-# -- what should be deployed
+# what should be deployed
 deploy:
   # -- whether the rbac resources should be also deployed (ServiceAccount, ClusterRole, ClusterRoleBinding)
   rbac: true
@@ -63,7 +63,7 @@ tracing:
     tag: 1.33.0
     pullPolicy: Always
 
-# -- operator specific settings
+# operator specific settings
 operator:
   # -- should the logs be colorcul (env var `COLORS`)
   colors: true
@@ -98,7 +98,7 @@ podSecurityContext:
   # runAsNonRoot: true
 
 securityContext:
-    # -- For more options consult https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#securitycontext-v1-core
+  # -- For more options consult https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#securitycontext-v1-core
   capabilities:
     drop:
     - ALL
@@ -106,7 +106,7 @@ securityContext:
   allowPrivilegeEscalation: false
   # runAsNonRoot: true
 
-# -- resource definitions for operator's pod
+# resource definitions for operator's pod
 # see https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
 resources:
   limits:

@@ -17,10 +17,20 @@
 
 {{ template "chart.homepageLine" . }}
 
+## Usage
+
+```bash
+helm repo add log2rbac https://jkremser.github.io/log2rbac-operator
+helm repo update
+helm upgrade -i log2rbac log2rbac/log2rbac-operator
+```
+
 {{ template "chart.maintainersSection" . }}
 
 {{ template "chart.sourcesSection" . }}
 
-{{ template "chart.requirementsSection" . }}
+(under `helm-chart/log2rbac-operator/`)
 
 {{ template "chart.valuesSection" . }}
+
+{{ template "chart.requirementsSection" . }}
