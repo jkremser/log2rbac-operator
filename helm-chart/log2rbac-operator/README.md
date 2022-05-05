@@ -15,6 +15,14 @@ A Helm chart for log2rbac Kubernetes operator
 
 **Homepage:** <https://jkremser.github.io/log2rbac-operator>
 
+## Usage
+
+```bash
+helm repo add log2rbac https://jkremser.github.io/log2rbac-operator
+helm repo update
+helm upgrade -i log2rbac log2rbac/log2rbac-operator
+```
+
 ## Maintainers
 
 | Name | Email | Url |
@@ -25,16 +33,13 @@ A Helm chart for log2rbac Kubernetes operator
 
 * <https://github.com/jkremser/log2rbac-operator>
 
-## Requirements
-
-Kubernetes: `>= 1.14.0-0`
+(under `helm-chart/log2rbac-operator/`)
 
 ## Values
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | affinity | object | `{}` | https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/ |
-| deploy | object | `{"jaeger":false,"operator":true,"rbac":true,"service":true}` | what should be deployed |
 | deploy.jaeger | bool | `false` | whether the jaeger should be deployed with the operator (use together with `tracing.enabled = true`) |
 | deploy.operator | bool | `true` | whether the operator itself should be deployed (Deployment) |
 | deploy.rbac | bool | `true` | whether the rbac resources should be also deployed (ServiceAccount, ClusterRole, ClusterRoleBinding) |
@@ -50,7 +55,6 @@ Kubernetes: `>= 1.14.0-0`
 | metrics.serviceType | string | `"NodePort"` | typeof the service for metrics (ClusterIP, NodePort, LoadBalancer). Consult https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types |
 | nameOverride | string | `""` |  |
 | nodeSelector | object | `{}` | https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/ |
-| operator | object | `{"colors":true,"noBanner":false,"restartPods":true,"syncIntervals":{"afterNoLogs":30,"afterNoRbacEntry":5,"afterPodRestart":20}}` | operator specific settings |
 | operator.colors | bool | `true` | should the logs be colorcul (env var `COLORS`) |
 | operator.noBanner | bool | `false` | should the ascii logo be printed in the logs (env var `NO_BANNER`) |
 | operator.restartPods | bool | `true` | whether the operator should be restarting the pods after modifying the role (env var `SHOULD_RESTART_APP_PODS`) if not set defaults to `true` |
@@ -60,7 +64,10 @@ Kubernetes: `>= 1.14.0-0`
 | podAnnotations | object | `{}` | additional annotations that will be applied on operator's pod |
 | podLabels | object | `{}` | additional labels that will be applied on operator's pod |
 | podSecurityContext | string | `nil` |  |
-| resources | object | `{"limits":{"cpu":"500m","memory":"128Mi"},"requests":{"cpu":"10m","memory":"64Mi"}}` | resource definitions for operator's pod see https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/ |
+| resources.limits.cpu | string | `"500m"` |  |
+| resources.limits.memory | string | `"128Mi"` |  |
+| resources.requests.cpu | string | `"10m"` |  |
+| resources.requests.memory | string | `"64Mi"` |  |
 | securityContext.allowPrivilegeEscalation | bool | `false` |  |
 | securityContext.capabilities | object | `{"drop":["ALL"]}` | For more options consult https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#securitycontext-v1-core |
 | securityContext.readOnlyRootFilesystem | bool | `true` |  |
@@ -70,3 +77,8 @@ Kubernetes: `>= 1.14.0-0`
 | tracing.jaegerImage | object | `{"pullPolicy":"Always","repository":"jaegertracing/all-in-one","tag":"1.33.0"}` | if `deploy.jaeger==true` this image will be used in the deployment for Jaeger |
 | tracing.samplingRatio | string | `nil` | float representing the ratio of how often the span should be kept/dropped (env var `TRACING_SAMPLING_RATIO`) if not specified, the AlwaysSample will be used which is the same as 1.0. `0.1` would mean that 10% of samples will be kept |
 | tracing.sidecarImage | object | `{"pullPolicy":"Always","repository":"otel/opentelemetry-collector","tag":"0.48.0"}` | OpenTelemetry collector into which the log2rbac operator sends the spans. It can be further configured to send its data to somewhere else using exporters (Jaeger for instance) |
+
+## Requirements
+
+Kubernetes: `>= 1.14.0-0`
+
