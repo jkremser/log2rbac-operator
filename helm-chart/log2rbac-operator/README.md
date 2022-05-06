@@ -44,7 +44,6 @@ helm upgrade -i log2rbac log2rbac/log2rbac-operator
 | deploy.operator | bool | `true` | whether the operator itself should be deployed (Deployment) |
 | deploy.rbac | bool | `true` | whether the rbac resources should be also deployed (ServiceAccount, ClusterRole, ClusterRoleBinding) |
 | deploy.service | bool | `true` | whether the service for metrics and open-telemetry should be deployed (Service) |
-| fullnameOverride | string | `""` |  |
 | image.pullPolicy | string | `"Always"` | translates to pod's `spec.imagePullPolicy` |
 | image.repository | string | `"jkremser/log2rbac"` | container image repo (can be prepended by image registry) |
 | image.tag | string | `""` | Overrides the image tag whose default is the chart appVersion. |
@@ -52,8 +51,7 @@ helm upgrade -i log2rbac log2rbac/log2rbac-operator
 | metrics.enabled | bool | `true` | should the metrics be enabled (additional arg for log2rbac binary) |
 | metrics.nodePort | int | `30081` | Port on node that will be used for metrics. This make sense only for serviceType = NodePort, otherwise it's ignored |
 | metrics.port | int | `8080` | on which port the metrics server should listen |
-| metrics.serviceType | string | `"NodePort"` | typeof the service for metrics (ClusterIP, NodePort, LoadBalancer). Consult https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types |
-| nameOverride | string | `""` |  |
+| metrics.serviceType | string | `"NodePort"` | typeof the service for metrics (ClusterIP, NodePort, LoadBalancer, ExternalName). Consult https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types |
 | nodeSelector | object | `{}` | https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/ |
 | operator.colors | bool | `true` | should the logs be colorcul (env var `COLORS`) |
 | operator.noBanner | bool | `false` | should the ascii logo be printed in the logs (env var `NO_BANNER`) |
