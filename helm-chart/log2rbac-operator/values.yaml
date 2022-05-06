@@ -1,10 +1,5 @@
 # Default values for log2rbac-operator.
 
-
-# chart specific
-nameOverride: ""
-fullnameOverride: ""
-
 # what should be deployed
 deploy:
   # -- whether the rbac resources should be also deployed (ServiceAccount, ClusterRole, ClusterRoleBinding)
@@ -33,7 +28,7 @@ metrics:
   # -- on which port the metrics server should listen
   port: 8080
 
-  # -- typeof the service for metrics (ClusterIP, NodePort, LoadBalancer). Consult https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
+  # -- typeof the service for metrics (ClusterIP, NodePort, LoadBalancer, ExternalName). Consult https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
   serviceType: NodePort
 
   # -- Port on node that will be used for metrics. This make sense only for serviceType = NodePort, otherwise it's ignored

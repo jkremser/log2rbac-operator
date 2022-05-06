@@ -1,0 +1,248 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "values.yaml for log2rbac helm chart",
+    "$ref": "#/definitions/All",
+    "definitions": {
+        "All": {
+            "type": "object",
+            "required": [],
+            "additionalProperties": false,
+            "properties": {
+                "deploy": {
+                    "$ref": "#/definitions/Deploy"
+                },
+                "image": {
+                    "$ref": "#/definitions/Image"
+                },
+                "metrics": {
+                    "$ref": "#/definitions/Metrics"
+                },
+                "tracing": {
+                    "$ref": "#/definitions/Tracing"
+                },
+                "operator": {
+                    "$ref": "#/definitions/Operator"
+                },
+                "podAnnotations": {
+                    "$ref": "#/definitions/PodAnnotations"
+                },
+                "podLabels": {
+                    "$ref": "#/definitions/PodLabels"
+                },
+                "imagePullSecrets": {
+                    "$ref": "#/definitions/ImagePullSecrets"
+                },
+                "podSecurityContext": {
+                    "$ref": "#/definitions/PodSecurityContext"
+                },
+                "securityContext": {
+                    "$ref": "#/definitions/SecurityContext"
+                },
+                "resources": {
+                    "$ref": "#/definitions/Resources"
+                },
+                "nodeSelector": {
+                    "$ref": "#/definitions/NodeSelector"
+                },
+                "tolerations": {
+                    "$ref": "#/definitions/Tolerations"
+                },
+                "affinity": {
+                    "$ref": "#/definitions/Affinity"
+                }
+            }
+        },
+        "Deploy": {
+            "type": "object",
+            "required": [],
+            "additionalProperties": false,
+            "properties": {
+                "rbac": {
+                    "type": "boolean"
+                },
+                "operator": {
+                    "type": "boolean"
+                },
+                "service": {
+                    "type": "boolean"
+                },
+                "jaeger": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "Image": {
+            "type": "object",
+            "required": [],
+            "additionalProperties": false,
+            "properties": {
+                "repository": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "pullPolicy": {
+                    "enum": [
+                        "Always",
+                        "IfNotPresent",
+                        "Never"
+                    ]
+                },
+                "tag": {
+                    "type": "string"
+                }
+            }
+        },
+        "Metrics": {
+            "type": "object",
+            "required": [],
+            "additionalProperties": false,
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "port": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 65535
+                },
+                "serviceType": {
+                    "enum": [
+                        "ClusterIP",
+                        "NodePort",
+                        "LoadBalancer",
+                        "ExternalName"
+                    ]
+                },
+                "nodePort": {
+                    "type": "integer",
+                    "minimum": 30000,
+                    "maximum": 32768
+                }
+            }
+        },
+        "Tracing": {
+            "type": "object",
+            "required": [],
+            "additionalProperties": false,
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "endpoint": {
+                    "type": "string",
+                    "pattern": "^.{2,256}:\\d{2,5}$"
+                },
+                "samplingRatio": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^(0(\\.\\d{1,3})?|1(\\.0)?)$"
+                },
+                "sidecarImage": {
+                    "$ref": "#/definitions/Image"
+                },
+                "jaegerImage": {
+                    "$ref": "#/definitions/Image"
+                }
+            }
+        },
+        "Operator": {
+            "type": "object",
+            "required": [],
+            "additionalProperties": false,
+            "properties": {
+                "colors": {
+                    "type": "boolean"
+                },
+                "noBanner": {
+                    "type": "boolean"
+                },
+                "restartPods": {
+                    "type": "boolean"
+                },
+                "syncIntervals": {
+                    "type": "object",
+                    "required": [],
+                    "properties": {
+                        "afterNoRbacEntry": {
+                            "type": "integer",
+                            "minimum": 0
+                        },
+                        "afterNoLogs": {
+                            "type": "integer",
+                            "minimum": 0
+                        },
+                        "afterPodRestart": {
+                            "type": "integer",
+                            "minimum": 0
+                        }
+                    }
+                }
+            }
+        },
+        "PodAnnotations": {
+            "type": [
+                "object",
+                "null"
+            ],
+            "additionalProperties": true
+        },
+        "PodLabels": {
+            "type": [
+                "object",
+                "null"
+            ],
+            "additionalProperties": true
+        },
+        "ImagePullSecrets": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": true
+            }
+        },
+        "PodSecurityContext": {
+            "type": [
+                "object",
+                "null"
+            ],
+            "additionalProperties": true
+        },
+        "SecurityContext": {
+            "type": [
+                "object",
+                "null"
+            ],
+            "additionalProperties": true
+        },
+        "Resources": {
+            "type": [
+                "object",
+                "null"
+            ],
+            "additionalProperties": true
+        },
+        "NodeSelector": {
+            "type": [
+                "object",
+                "null"
+            ],
+            "additionalProperties": true
+        },
+        "Tolerations": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": true
+            }
+        },
+        "Affinity": {
+            "type": [
+                "object",
+                "null"
+            ],
+            "additionalProperties": true
+        }
+    }
+}
