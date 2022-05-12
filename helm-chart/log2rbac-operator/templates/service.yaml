@@ -6,7 +6,6 @@ metadata:
   labels:
     control-plane: log2rbac
   name: log2rbac-metrics
-  namespace: log2rbac
 spec:
   type: {{ .Values.metrics.serviceType }}
   ports:

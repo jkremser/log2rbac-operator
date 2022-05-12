@@ -5,7 +5,6 @@ metadata:
   labels:
     control-plane: log2rbac
   name: log2rbac
-  namespace: log2rbac
 spec:
   replicas: 1
   selector:
@@ -93,12 +92,12 @@ spec:
         - mountPath: /conf
           name: agent-config
       volumes:
-      - configMap:
+      - name: agent-config
+        configMap:
           items:
           - key: agent.yaml
             path: agent.yaml
           name: agent-config
-        name: agent-config
       {{- end }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}

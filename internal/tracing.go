@@ -30,7 +30,7 @@ func SetupTracing(cfg Config, ctx context.Context, log logr.Logger) func() {
 	var samplerOption sdktrace.TracerProviderOption
 	if r, err := strconv.ParseFloat(cfg.Tracing.SamplingRatio, 64); err == nil {
 		samplerOption = sdktrace.WithSampler(sdktrace.TraceIDRatioBased(r))
-		log.Info(fmt.Sprintf( "Tracing: sampling ratio is set to '%f'", r))
+		log.Info(fmt.Sprintf( "Tracing: sampling ratio is set to '%.3f'", r))
 	} else {
 		log.Info( "Tracing: sampling ratio is not specified, using AlwaysSample")
 		samplerOption = sdktrace.WithSampler(sdktrace.AlwaysSample())
