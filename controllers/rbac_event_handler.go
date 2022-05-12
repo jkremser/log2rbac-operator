@@ -60,11 +60,14 @@ type AppInfo struct {
 }
 
 // Setup Add some initialization stuff in here
-func (r *RbacEventHandler) Setup() {
+func (r *RbacEventHandler) Setup(ctx context.Context) {
 	r.Tracer = otel.GetTracerProvider().Tracer(
 			"github.com/jkremser/log2rbac-operator",
 			trace.WithInstrumentationVersion(r.Config.App.Version),
 			trace.WithSchemaURL(semconv.SchemaURL))
+	// create dummy spam on start
+	_, span := r.Tracer.Start(ctx, "setup")
+	span.End()
 }
 
 func (r *RbacEventHandler) handleResource(ctx context.Context, resource kremserv1.RbacNegotiation) ctrl.Result {
