@@ -40,6 +40,7 @@ helm upgrade -i log2rbac log2rbac/log2rbac-operator
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | affinity | object | `{}` | https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/ |
+| deploy.crds | bool | `true` | whether the custom resource definitions should be also deployed into the cluster |
 | deploy.jaeger | bool | `false` | whether the jaeger should be deployed with the operator (use together with `tracing.enabled = true`) |
 | deploy.operator | bool | `true` | whether the operator itself should be deployed (Deployment) |
 | deploy.rbac | bool | `true` | whether the rbac resources should be also deployed (ServiceAccount, ClusterRole, ClusterRoleBinding) |
