@@ -29,3 +29,7 @@ semgrep.sarif
 
 # mac
 .DS_Store
+
+# OLM
+/olm/bundle
+/olm/olm-bundle
