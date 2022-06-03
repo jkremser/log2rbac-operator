@@ -43,7 +43,7 @@ generate() {
             --replaces-version=${PREVIOUS_VERSION} \
             --helm-chart-overrides \
             --output-dir ${DIR}
-    #git checkout ${DIR}/annotations.yaml.tmpl
+    git checkout ${DIR}/annotations.yaml.tmpl
 }
 
 downloadOlmBundle() {
