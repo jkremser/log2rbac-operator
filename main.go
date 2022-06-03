@@ -64,9 +64,9 @@ func main() {
 	var cfg internal.Config
 	err := envconfig.Process(ctx, &cfg)
 	internal.SetupLog(cfg.Log)
-	cfg.App = &internal.AppConfig {
+	cfg.App = &internal.AppConfig{
 		Version: version,
-		GitSha: gitSha,
+		GitSha:  gitSha,
 	}
 	if err != nil {
 		setupLog.Error(err, "unable to load config")

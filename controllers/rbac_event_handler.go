@@ -49,7 +49,7 @@ type RbacEventHandler struct {
 	clientset *kubernetes.Clientset
 	Recorder  record.EventRecorder
 	Config    *internal.Config
-	Tracer	  trace.Tracer
+	Tracer    trace.Tracer
 }
 
 // AppInfo bundles the application specific information including logs, service account and list of live pods
@@ -62,9 +62,9 @@ type AppInfo struct {
 // Setup Add some initialization stuff in here
 func (r *RbacEventHandler) Setup(ctx context.Context) {
 	r.Tracer = otel.GetTracerProvider().Tracer(
-			"github.com/jkremser/log2rbac-operator",
-			trace.WithInstrumentationVersion(r.Config.App.Version),
-			trace.WithSchemaURL(semconv.SchemaURL))
+		"github.com/jkremser/log2rbac-operator",
+		trace.WithInstrumentationVersion(r.Config.App.Version),
+		trace.WithSchemaURL(semconv.SchemaURL))
 	// create dummy spam on start
 	_, span := r.Tracer.Start(ctx, "setup")
 	span.End()

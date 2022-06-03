@@ -4,9 +4,14 @@ import (
 	"context"
 	"fmt"
 	"github.com/go-logr/logr"
+	"go.opentelemetry.io/contrib/propagators/aws/xray"
+	"go.opentelemetry.io/contrib/propagators/b3"
+	"go.opentelemetry.io/contrib/propagators/jaeger"
+	"go.opentelemetry.io/contrib/propagators/ot"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
+	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.6.1"
@@ -22,7 +27,7 @@ func SetupTracing(cfg Config, ctx context.Context, log logr.Logger) func() {
 	client := otlptracehttp.NewClient(
 		otlptracehttp.WithEndpoint(cfg.Tracing.Endpoint),
 		otlptracehttp.WithInsecure(),
-		)
+	)
 	exporter, err := otlptrace.New(ctx, client)
 	if err != nil {
 		log.Error(err, "creating OTLP trace exporter")
@@ -30,9 +35,9 @@ func SetupTracing(cfg Config, ctx context.Context, log logr.Logger) func() {
 	var samplerOption sdktrace.TracerProviderOption
 	if r, err := strconv.ParseFloat(cfg.Tracing.SamplingRatio, 64); err == nil {
 		samplerOption = sdktrace.WithSampler(sdktrace.TraceIDRatioBased(r))
-		log.Info(fmt.Sprintf( "Tracing: sampling ratio is set to '%.3f'", r))
+		log.Info(fmt.Sprintf("Tracing: sampling ratio is set to '%.3f'", r))
 	} else {
-		log.Info( "Tracing: sampling ratio is not specified, using AlwaysSample")
+		log.Info("Tracing: sampling ratio is not specified, using AlwaysSample")
 		samplerOption = sdktrace.WithSampler(sdktrace.AlwaysSample())
 	}
 
@@ -42,10 +47,18 @@ func SetupTracing(cfg Config, ctx context.Context, log logr.Logger) func() {
 		samplerOption,
 	)
 	otel.SetTracerProvider(tracerProvider)
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
+		propagation.TraceContext{},
+		propagation.Baggage{},
+		b3.New(),
+		&jaeger.Jaeger{},
+		&ot.OT{},
+		&xray.Propagator{},
+	))
 
 	return func() {
 		if err := tracerProvider.Shutdown(ctx); err != nil {
-			log.Error(err,  "stopping tracer provider")
+			log.Error(err, "stopping tracer provider")
 		}
 	}
 }
