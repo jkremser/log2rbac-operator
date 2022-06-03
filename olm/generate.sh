@@ -28,7 +28,8 @@ main() {
         _VERSION=$(git describe --abbrev=0 --tags)
         _VERSION=${_VERSION#"v"}
     else
-        git checkout v${_VERSION}
+        echo checking out version v${_VERSION}
+        # git checkout v${_VERSION}
     fi
     PREVIOUS_VERSION=${PREVIOUS_VERSION:-$(git describe --abbrev=0 --tags v${_VERSION}^)}
 
@@ -37,7 +38,8 @@ main() {
 
 generate() {
     echo "    containerImage: jkremser/log2rbac:v${_VERSION}" >> ${DIR}/annotations.yaml.tmpl
-    helm -n placeholder template ${DIR}/../helm-chart/log2rbac-operator | ${OLM_BINARY} \
+    helm -n placeholder template ${DIR}/../helm-chart/log2rbac-operator \
+        --set image.tag=v${_VERSION} | ${OLM_BINARY} \
             --chart-file-path=${DIR}/../helm-chart/log2rbac-operator/Chart.yaml \
             --version=v${_VERSION} \
             --replaces-version=${PREVIOUS_VERSION} \
