@@ -1,0 +1,53 @@
+apiVersion: v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  namespace: placeholder
+spec:
+  maturity: alpha
+  minKubeVersion: 1.17.0
+  provider:
+    name: Jiri Kremser
+    url: https://github.com/jkremser/log2rbac-operator
+  description: |
+    **Kubernetes operator that helps you to set up your RBAC rules correctly**
+
+    Kubernetes operator that helps you to set up the RBAC rules for your application. If requested, it scans the application's log files for authorization errors and adds them as exceptions/rights to the associated Role. User has to allow this process by creating a RbacNegotiation custom resource where they need to specify the app* and Role. Role can be either existing one or operator can create a new one for you and bind it to the service account that's configured with the deployment. Again if the service account is not there, it will be created by the operator.
+
+    App can be one of the following:
+    - Deployment
+    - StatefulSet
+    - DaemonSet
+    - Service
+    - ReplicaSet
+    - or key-value pair specifying the pod selector
+
+    ```bash
+    # create RbacNegotiation for k8gb
+    cat <<CustomResource | kubectl apply -f -
+    apiVersion: kremser.dev/v1
+    kind: RbacNegotiation
+    metadata:
+      name: for-k8gb
+    spec:
+      for:
+        kind: Deployment
+        name: k8gb
+        namespace: k8gb
+      role:
+        name: new-k8gb-role
+        isClusterRole: true
+        createIfNotExist: true
+    CustomResource
+    ```
+
+    For more information see [github repo](https://github.com/jkremser/log2rbac-operator).
+  installModes:
+    - supported: false
+      type: OwnNamespace
+    - supported: false
+      type: SingleNamespace
+    - supported: false
+      type: MultiNamespace
+    - supported: true
+      type: AllNamespaces
+
