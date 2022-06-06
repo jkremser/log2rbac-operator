@@ -16,3 +16,9 @@ jobs:
           source-charts-folder: 'helm-chart'
           destination-repo: jkremser/log2rbac-operator
           destination-branch: gh-pages
+      - name: Invoke workflow for OLM
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: OLM bundle and PR
+          token: ${{ secrets.CR_TOKEN }}
+          inputs: '{ "bundleVersion": "master" }'

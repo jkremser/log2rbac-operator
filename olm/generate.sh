@@ -29,7 +29,7 @@ main() {
         _VERSION=${_VERSION#"v"}
     else
         echo checking out version v${_VERSION}
-        # git checkout v${_VERSION}
+        git checkout v${_VERSION}
     fi
     PREVIOUS_VERSION=${PREVIOUS_VERSION:-$(git describe --abbrev=0 --tags v${_VERSION}^)}
 
