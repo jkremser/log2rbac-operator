@@ -1,9 +1,10 @@
 [![CI](https://github.com/jkremser/log2rbac-operator/workflows/CI/badge.svg?branch=master)](https://github.com/jkremser/log2rbac-operator/actions/workflows/ci.yaml?query=workflow%3A%22CI%22+branch%3Amaster)
 [![GitHub release](https://img.shields.io/github/release/jkremser/log2rbac-operator/all.svg?style=flat-square)](https://github.com/jkremser/log2rbac-operator/releases) 
-[![Docker Pulls](https://img.shields.io/docker/pulls/jkremser/log2rbac.svg)](https://hub.docker.com/r/jkremser/log2rbac)
 [![Go Report Card](https://goreportcard.com/badge/github.com/jkremser/log2rbac-operator)](https://goreportcard.com/report/github.com/jkremser/log2rbac-operator)
-[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/log2rbac-operator)](https://artifacthub.io/packages/search?repo=log2rbac-operator)
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/log2rbac-operator)](https://artifacthub.io/packages/search?ts_query_web=log2rbac)
 [![License: MIT](https://img.shields.io/badge/License-Apache_2.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
+![Last Commit](https://img.shields.io/github/last-commit/jkremser/log2rbac-operator)
+<!-- [![Docker Pulls](https://img.shields.io/docker/pulls/jkremser/log2rbac.svg)](https://hub.docker.com/r/jkremser/log2rbac) -->
 
 # log2rbac-operator
 Kubernetes operator that helps you to set up the RBAC rules for your application. If requested, it scans the application's log files
@@ -18,7 +19,6 @@ Role can be either existing one or operator can create a new one for you and bin
 - Service
 - ReplicaSet
 - or key-value pair specifying the pod selector
-
 
 ## Quick Start
 
