@@ -20,5 +20,5 @@ jobs:
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: OLM bundle and PR
-          token: ${{ secrets.CR_TOKEN }}
+          token: ${{ secrets.RELEASER_TOKEN }}
           inputs: '{ "bundleVersion": "master" }'
