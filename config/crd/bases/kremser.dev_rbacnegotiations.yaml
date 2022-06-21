@@ -20,18 +20,33 @@ spec:
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
-    - jsonPath: .spec.for.kind
-      name: kind
+    - description: For which kind the rbac negotiation was requested
+      jsonPath: .spec.for.kind
+      name: for kind
       type: string
-    - jsonPath: .spec.for.name
-      name: name
+    - description: Name of the {kind}
+      jsonPath: .spec.for.name
+      name: for name
       type: string
-    - jsonPath: .spec.role.name
-      name: role
-      type: string
-    - jsonPath: .spec.status.status
+    - description: State of the negotiation
+      jsonPath: .status.status
       name: status
       type: string
+    - description: Name of the associated role
+      jsonPath: .spec.role.name
+      name: role
+      priority: 10
+      type: string
+    - description: How many RBAC entries have been added to the role
+      jsonPath: .status.entriesAdded
+      name: entries
+      priority: 12
+      type: string
+    - description: When the last reconciliation was done
+      jsonPath: .status.lastCheck
+      name: checked
+      priority: 13
+      type: date
     name: v1
     schema:
       openAPIV3Schema:
@@ -102,13 +117,31 @@ spec:
                 type: object
               serviceAccountName:
                 description: this can override the real service account that's specified
-                  in the deployment,rs,ds or ss
+                  in the deployment,rs,ds or ss the calculated value will be stored
+                  in status sub-resource
                 type: string
             required:
             - for
             type: object
           status:
             description: RbacNegotiationStatus defines the observed state of RbacNegotiation
+            properties:
+              entriesAdded:
+                format: int32
+                minimum: 0
+                type: integer
+              lastCheck:
+                format: date-time
+                type: string
+              status:
+                default: Requested
+                enum:
+                - Requested
+                - InProgress
+                - Error
+                - NoChange
+                - Synced
+                type: string
             type: object
         type: object
         x-kubernetes-preserve-unknown-fields: true

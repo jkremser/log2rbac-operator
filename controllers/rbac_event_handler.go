@@ -24,6 +24,7 @@ import (
 	"io"
 	apps "k8s.io/api/apps/v1"
 	"k8s.io/client-go/tools/record"
+	"reflect"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"strings"
 	"time"
@@ -70,7 +71,7 @@ func (r *RbacEventHandler) Setup(ctx context.Context) {
 	span.End()
 }
 
-func (r *RbacEventHandler) handleResource(ctx context.Context, resource kremserv1.RbacNegotiation) ctrl.Result {
+func (r *RbacEventHandler) handleResource(ctx context.Context, resource *kremserv1.RbacNegotiation) ctrl.Result {
 	// tracing
 	newCtx, span := r.Tracer.Start(ctx, "handleResource")
 	span.SetAttributes(attribute.String("resource.name", resource.Name))
@@ -81,7 +82,9 @@ func (r *RbacEventHandler) handleResource(ctx context.Context, resource kremserv
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
-		log.Log.Error(err, "Unable to get logs from underlying pod.")
+		if !strings.Contains(fmt.Sprint(err), "ContainerCreating") {
+			UpdateStatus(r.Client, ctx, resource, true, false)
+		}
 		return ctrl.Result{
 			Requeue:      true,
 			RequeueAfter: time.Duration(r.Config.Controller.SyncIntervalAfterNoLogsSeconds) * time.Second,
@@ -96,19 +99,22 @@ func (r *RbacEventHandler) handleResource(ctx context.Context, resource kremserv
 		err := r.addMissingRbacEntry(newCtx, resource.Spec.For.Namespace, appInfo.serviceAccount, missingRbacEntry, resource.Spec.Role)
 		if err != nil {
 			log.Log.Error(err, "Unable to add missing rbac entry")
+			UpdateStatus(r.Client, ctx, resource, true, false)
+
 			return ctrl.Result{
 				Requeue:      true,
 				RequeueAfter: time.Duration(r.Config.Controller.SyncIntervalAfterErrorMinutes) * time.Minute,
 			}
 		}
-		r.emitEvent(resource, missingRbacEntry)
+		r.emitEvent(*resource, missingRbacEntry)
 		tryAgainInSeconds := r.Config.Controller.SyncIntervalAfterPodRestartSeconds
 		if r.Config.Controller.ShouldRestartAppPods {
 			r.restartPods(newCtx, appInfo.livePods)
 		} else {
-			// pod is going to be restarted anyway, but exp backoff can make this quite a long process
+			// pod is going to be restarted anyway, but the default exp backoff can make this quite a long process
 			tryAgainInSeconds *= 4
 		}
+		UpdateStatus(r.Client, ctx, resource, false, true)
 		return ctrl.Result{
 			Requeue:      true,
 			RequeueAfter: time.Duration(tryAgainInSeconds) * time.Second,
@@ -116,6 +122,8 @@ func (r *RbacEventHandler) handleResource(ctx context.Context, resource kremserv
 	}
 	retryMinutes := r.Config.Controller.SyncIntervalAfterNoRbacEntryMinutes
 	log.Log.Info(fmt.Sprintf("No rbac related stuff has been found in the logs. Will try again in %d minutes..", retryMinutes))
+
+	UpdateStatus(r.Client, ctx, resource, false, false)
 	return ctrl.Result{
 		Requeue:      true,
 		RequeueAfter: time.Duration(retryMinutes) * time.Minute,
@@ -294,9 +302,11 @@ func (r *RbacEventHandler) getAppInfo(ctx context.Context, resource kremserv1.Rb
 	podLogs, err := req.Stream(ctx)
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "waiting to start: ContainerCreating") {
+			log.Log.Info(fmt.Sprintf("Unable to get logs from underlying pod. Pod %s is still starting (ContainerCreating)", podName))
 			return nil, fmt.Errorf("pod %s is still starting (ContainerCreating)", podName)
 		}
 		log.Log.V(1).Info("Check the ReplicaSet if the service account isn't missing.")
+		log.Log.Error(err, "Unable to get logs from underlying pod.")
 		return nil, err
 	}
 	defer podLogs.Close()
@@ -354,7 +364,7 @@ func (r *RbacEventHandler) getSelectorAndSA(ctx context.Context, resource kremse
 
 func (r *RbacEventHandler) getObject(ctx context.Context, obj client.Object, nsName client.ObjectKey) (map[string]string, string) {
 	if err := r.Client.Get(ctx, nsName, obj); err != nil {
-		log.Log.Error(err, fmt.Sprintf("Cannot get k8s object %s with name %v ", obj.GetObjectKind(), nsName))
+		log.Log.Error(err, fmt.Sprintf("Cannot get %v resource with name '%v' ", reflect.TypeOf(obj), nsName))
 		return nil, ""
 	}
 	switch casted := obj.(type) {

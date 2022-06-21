@@ -52,7 +52,7 @@ type RbacNegotiationReconciler struct {
 func (r *RbacNegotiationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
-	log.Log.Info("fetching RbacNegotiation resource")
+	//log.Log.Info("fetching RbacNegotiation resource")
 	rbacNeg := kremserv1.RbacNegotiation{}
 	if err := r.Client.Get(ctx, req.NamespacedName, &rbacNeg); err != nil {
 		log.Log.Info(fmt.Sprintf("Failed to get RbacNegotiation '%s/%s'. It was probably deleted.", req.NamespacedName.Namespace, req.NamespacedName.Name))
@@ -60,11 +60,16 @@ func (r *RbacNegotiationReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		// resource is created in the future.
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
+
+	// ignore the same events that are not older than 2 sec
+	if IsNotOlderThan(&rbacNeg, 2) {
+		return ctrl.Result{}, nil
+	}
 	if rbacNeg.Spec.For.Namespace == "" {
 		rbacNeg.Spec.For.Namespace = req.Namespace
 	}
 	log.Log.Info(fmt.Sprintf("New rbac negotiation event: for %s '%s'", strings.ToLower(rbacNeg.Spec.For.Kind), rbacNeg.Spec.For.Name))
-	result := r.handler.handleResource(ctx, rbacNeg)
+	result := r.handler.handleResource(ctx, &rbacNeg)
 	return result, nil
 }
 
