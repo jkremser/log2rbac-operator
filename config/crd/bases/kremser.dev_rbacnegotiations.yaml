@@ -117,8 +117,7 @@ spec:
                 type: object
               serviceAccountName:
                 description: this can override the real service account that's specified
-                  in the deployment,rs,ds or ss the calculated value will be stored
-                  in status sub-resource
+                  in the deployment,rs,ds or ss
                 type: string
             required:
             - for
@@ -139,7 +138,7 @@ spec:
                 - Requested
                 - InProgress
                 - Error
-                - NoChange
+                - Stable
                 - Synced
                 type: string
             type: object

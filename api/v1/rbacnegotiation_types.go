@@ -58,7 +58,7 @@ type RbacNegotiationSpec struct {
 
 // RbacNegotiationStatus defines the observed state of RbacNegotiation
 type RbacNegotiationStatus struct {
-	//+kubebuilder:validation:Enum={Requested,InProgress,Error,NoChange,Synced}
+	//+kubebuilder:validation:Enum={Requested,InProgress,Error,Stable,Synced}
 	//+kubebuilder:default=Requested
 	Status    string      `json:"status,omitempty"`
 	LastCheck metav1.Time `json:"lastCheck,omitempty" protobuf:"bytes,8,opt,name=lastCheck"`

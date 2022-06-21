@@ -12,10 +12,9 @@ import (
 const (
 	Requested  = 1
 	InProgress = 2
-	Synced     = 3
-	NoChange   = 4
-	Error      = 5
-	Unknown    = 6
+	Stable     = 3
+	Error      = 4
+	Unknown    = 5
 )
 
 var lastTwo map[string][]byte
@@ -26,7 +25,11 @@ func UpdateStatus(c client.Client, ctx context.Context, res *kremserv1.RbacNegot
 	}
 	if lastTwo[res.Name] == nil {
 		lastTwo[res.Name] = []byte{Unknown, Requested}
-		res.Status.Status = "Requested"
+		if !error && !added {
+			res.Status.Status = "Stable"
+		} else {
+			res.Status.Status = "Requested"
+		}
 		if added {
 			res.Status.EntriesAdded = 1
 		} else {
@@ -43,12 +46,12 @@ func UpdateStatus(c client.Client, ctx context.Context, res *kremserv1.RbacNegot
 		lastTwo[res.Name] = []byte{lastTwo[res.Name][1], InProgress}
 		res.Status.Status = "InProgress"
 	} else {
-		if lastTwo[res.Name][0] == NoChange && lastTwo[res.Name][1] == NoChange {
+		if lastTwo[res.Name][0] == Stable && lastTwo[res.Name][1] == Stable {
 			res.Status.Status = "Synced"
 		} else {
-			res.Status.Status = "InProgress"
+			res.Status.Status = "Stable"
 		}
-		lastTwo[res.Name] = []byte{lastTwo[res.Name][1], NoChange}
+		lastTwo[res.Name] = []byte{lastTwo[res.Name][1], Stable}
 	}
 
 	updateTimeAndSave(c, ctx, res)
