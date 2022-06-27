@@ -319,12 +319,14 @@ func GobTestReconciliationForPrometheusService(c *TestContext) {
 				time.Sleep(10 * time.Second)
 				role, err := c.k8sCl.RbacV1().ClusterRoles().Get(context.Background(), appPromRoleName1, metav1.GetOptions{})
 				if errors.IsNotFound(err) {
+					if attempts == 0 {
+						g.Failf("ClusterRole %s was not created by the operator.", appPromRoleName1)
+					}
 					checkRole(attempts - 1)
 				}
+				g.Assert(role).IsNotNil()
 				newRole = role
-				if attempts == 0 {
-					g.Failf("ClusterRole %s was not created by the operator.", appPromRoleName1)
-				}
+				return
 			}
 			checkRole(5)
 		})

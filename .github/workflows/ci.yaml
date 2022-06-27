@@ -104,20 +104,26 @@ jobs:
       - name: Print test logs & debug
         if: always()
         run: |
+          echo "::group::env | sort"
           env | sort
+          echo "::endgroup::"
+
           echo "::group::k get events"
           kubectl get events -A || true
           echo "::endgroup::"
+
           echo "::group::k describe deploy log2rbac"
           kubectl describe deploy -nlog2rbac log2rbac || true
           echo "::endgroup::"
+
           echo "::group::k describe clusterrole new-k8gb-role"
           kubectl describe clusterrole new-k8gb-role || true
           echo "::endgroup::"
-          echo CRs:
+
+          echo -e "\n\nCRs:"
           kubectl get rn -A || true
-          echo Deployments:
+          echo -e "\n\n Deployments:"
           kubectl get deployment -A || true
-          echo Operator logs:
+          echo -e "\n\n Operator logs:"
           kubectl logs -nlog2rbac -lid=log2rbac --tail=200 || true
 
