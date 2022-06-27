@@ -160,6 +160,7 @@ func (r *RbacEventHandler) addMissingRbacEntry(ctx context.Context, ns string, s
 				Rules: []rbac.PolicyRule{rbacEntryToPolicyRule(entry)},
 			}
 			rol.SetName(role.Name)
+			rol.ObjectMeta.Annotations = map[string]string{internal.CreatedByAnnotationKey: internal.CreatedByAnnotationValue}
 			c, clusterRoleSpan := r.Tracer.Start(ctx, "createClusterRole")
 			if err := r.Client.Create(c, rol); err != nil {
 				log.Log.Error(err, "Unable to create cluster role")
@@ -180,6 +181,7 @@ func (r *RbacEventHandler) addMissingRbacEntry(ctx context.Context, ns string, s
 				},
 			}
 			rb.SetName(role.Name + "-binding")
+			rb.ObjectMeta.Annotations = map[string]string{internal.CreatedByAnnotationKey: internal.CreatedByAnnotationValue}
 			_, clusterRoleBSpan := r.Tracer.Start(c, "createClusterRoleBinding")
 			if err := r.Client.Create(ctx, rb); err != nil && !errors.IsAlreadyExists(err) {
 				log.Log.Error(err, "Unable to create cluster role binding")
@@ -208,6 +210,7 @@ func (r *RbacEventHandler) addMissingRbacEntry(ctx context.Context, ns string, s
 				Rules: []rbac.PolicyRule{rbacEntryToPolicyRule(entry)},
 			}
 			rol.SetName(role.Name)
+			rol.ObjectMeta.Annotations = map[string]string{internal.CreatedByAnnotationKey: internal.CreatedByAnnotationValue}
 			rol.SetNamespace(ns)
 			c, roleSpan := r.Tracer.Start(ctx, "createRole")
 			if err := r.Client.Create(c, rol); err != nil {
@@ -229,6 +232,7 @@ func (r *RbacEventHandler) addMissingRbacEntry(ctx context.Context, ns string, s
 				},
 			}
 			rb.SetName(role.Name + "-binding")
+			rb.ObjectMeta.Annotations = map[string]string{internal.CreatedByAnnotationKey: internal.CreatedByAnnotationValue}
 			rb.SetNamespace(ns)
 			c, roleBSpan := r.Tracer.Start(c, "createClusterRoleBinding")
 			if err := r.Client.Create(c, rb); err != nil && !errors.IsAlreadyExists(err) {
@@ -328,6 +332,7 @@ func (r *RbacEventHandler) createSAIfNotExists(ctx context.Context, saName strin
 	if err := r.Client.Get(ctx, client.ObjectKey{Name: saName, Namespace: ns}, &sa); err != nil && errors.IsNotFound(err) {
 		log.Log.Info(fmt.Sprintf("Service account '%s/%s' has not been found, creating one..", ns, saName))
 		sa.Name = saName
+		sa.ObjectMeta.Annotations = map[string]string{internal.CreatedByAnnotationKey: internal.CreatedByAnnotationValue}
 		sa.Namespace = ns
 		if err := r.Client.Create(ctx, &sa); err != nil {
 			log.Log.Error(err, "Unable to create the service account")
