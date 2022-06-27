@@ -36,6 +36,12 @@ alternatively install it using [all-in-one yaml](deploy/all-in-one.yaml)
 kubectl apply -f http://bit.do/log2rbac
 ```
 
+or helm:
+
+```bash
+helm -n log2rbac upgrade -i log2rbac log2rbac/log2rbac-operator --wait --create-namespace
+```
+
 ```bash
 # create RbacNegotiation for k8gb
 cat <<CustomResource | kubectl apply -f -
