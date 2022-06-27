@@ -42,23 +42,51 @@ or helm:
 helm -n log2rbac upgrade -i log2rbac log2rbac/log2rbac-operator --wait --create-namespace
 ```
 
+Now when the operator was installed, let's deploy something that needs the special RBAC. Prometheus Operator is a good example.
+
+```bash
+kubectl create ns monitoring
+kubectl apply -f https://github.com/prometheus-operator/kube-prometheus/raw/v0.10.0/manifests/prometheusOperator-deployment.yaml
+```
+
+This deployment will fail to start because of the missing rights to do its stuff. Let's request the RBAC negotiation process.
+
 ```bash
 # create RbacNegotiation for k8gb
 cat <<CustomResource | kubectl apply -f -
 apiVersion: kremser.dev/v1
 kind: RbacNegotiation
 metadata:
-  name: for-k8gb
+  name: for-prom
 spec:
   for:
+    namespace: monitoring
     kind: Deployment
-    name: k8gb
-    namespace: k8gb
+    name: prometheus-operator
   role:
-    name: new-k8gb-role
+    name: new-prome-operator-role
     isClusterRole: true
     createIfNotExist: true
 CustomResource
+```
+
+```bash
+# After some time, the Prometheus Operator should start and we should see.
+
+k describe clusterrole new-prome-operator-role
+Name:         new-prome-operator-role
+Labels:       <none>
+Annotations:  app.kubernetes.io/created-by=log2rbac
+PolicyRule:
+  Resources                                  Non-Resource URLs  Resource Names  Verbs
+  ---------                                  -----------------  --------------  -----
+  configmaps                                 []                 []              [list watch]
+  namespaces                                 []                 []              [list watch]
+  secrets                                    []                 []              [list watch]
+  statefulsets.apps                          []                 []              [list watch]
+  alertmanagerconfigs.monitoring.coreos.com  []                 []              [list]
+  alertmanagers.monitoring.coreos.com        []                 []              [list]
+  ...
 ```
 
 ## Kubectl Plugin

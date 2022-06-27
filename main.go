@@ -114,6 +114,8 @@ func main() {
 	cleanup := internal.SetupTracing(cfg, ctx, setupLog)
 	defer cleanup()
 
+	// todo: check here if the CRD is there and if not, create it
+
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running log2rbac")
 		os.Exit(1)
