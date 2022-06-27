@@ -13,12 +13,15 @@ for authorization errors and adds them as exceptions/rights to the associated `R
 Role can be either existing one or operator can create a new one for you and bind it to the service account that's configured with the deployment. Again if the service account is not there, it will be created by the operator.
 
 <a name="clarify"></a>* App can be one of the following:
-- Deployment
-- StatefulSet
-- DaemonSet
-- Service
-- ReplicaSet
+- `Deployment`
+- `StatefulSet`
+- `DaemonSet`
+- `Service`
+- `ReplicaSet`
 - or key-value pair specifying the pod selector
+
+This project is conceptually very similar to [`audit2rbac`](https://github.com/liggitt/audit2rbac). The main distinction here is that `log2rbac` is based on the 
+controller pattern and on the output from the workloads, while `audit2rbac` uses the k8s' audit log and it's a "one-pass" CLI tool.
 
 ## Quick Start
 
