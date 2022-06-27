@@ -121,7 +121,7 @@ jobs:
           echo "::endgroup::"
 
           echo -e "\n\nCRs:"
-          kubectl get rn -A || true
+          kubectl get rn -A -owide || true
           echo -e "\n\n Deployments:"
           kubectl get deployment -A || true
           echo -e "\n\n Operator logs:"

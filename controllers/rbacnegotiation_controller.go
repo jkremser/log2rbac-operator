@@ -61,8 +61,8 @@ func (r *RbacNegotiationReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	// ignore the same events that are not older than 2 sec
-	if IsNotOlderThan(&rbacNeg, 2) {
+	// ignore the same events that are not older than 1.0 sec
+	if IsNotOlderThan(&rbacNeg, r.Config.Controller.IgnoreSameEventsWithinSeconds) {
 		return ctrl.Result{}, nil
 	}
 	if rbacNeg.Spec.For.Namespace == "" {

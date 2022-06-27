@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+	"crypto/rand"
 	"fmt"
 	. "github.com/franela/goblin"
 	"github.com/gruntwork-io/terratest/modules/shell"
@@ -16,7 +17,6 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"time"
-	"crypto/rand"
 
 	"testing"
 )
@@ -68,9 +68,9 @@ func TestAll(t *testing.T) {
 	// tests
 	g.Describe("log2rbac:", func() {
 		GobTestDeployment(&c)
-		GobTestReconciliationForDeployment(&c) // k8gb
-		GobTestReconciliationForCustomSelector(&c) // k8gb
-		GobTestReconciliationForPrometheusService(&c) // prometheus-operator
+		GobTestReconciliationForDeployment(&c)           // k8gb
+		GobTestReconciliationForCustomSelector(&c)       // k8gb
+		GobTestReconciliationForPrometheusService(&c)    // prometheus-operator
 		GobTestReconciliationForPrometheusDeployment(&c) // prometheus-operator
 	})
 }
@@ -169,7 +169,8 @@ func GobTestReconciliationForDeployment(c *TestContext) {
 			// create the RBACNegotiation custom resource that will trigger the operator
 			createCr(c.t, ns)
 		})
-		g.It("the CR was created", func() {rns, err := getRNs(c.crdRest, ns)
+		g.It("the CR was created", func() {
+			rns, err := getRNs(c.crdRest, ns)
 			callWasOk(g, err, rns)
 			g.Assert(len(rns)).IsNotZero()
 			g.Assert(rns[0].Name).Equal(appK8gbRnName1)
@@ -292,7 +293,7 @@ func GobTestReconciliationForPrometheusService(c *TestContext) {
 		})
 	})
 
-	g.Describe("After was deployed prometheus-operator and RN requested (using svc)", func() {
+	g.Describe("After prometheus-operator was deployed and RN requested (using svc)", func() {
 		g.After(func() {
 			makeClean(c.t, ns)
 		})

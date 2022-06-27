@@ -59,7 +59,7 @@ func UpdateStatus(c client.Client, ctx context.Context, res *kremserv1.RbacNegot
 
 func IsNotOlderThan(res *kremserv1.RbacNegotiation, seconds float64) bool {
 	if res.Status.LastCheck.Time.IsZero() {
-		return true
+		return false // first seen
 	}
 	duration := time.Since(res.Status.LastCheck.Time)
 	return duration.Seconds() < seconds
