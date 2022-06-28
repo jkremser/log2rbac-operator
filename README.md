@@ -4,6 +4,7 @@
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/log2rbac-operator)](https://artifacthub.io/packages/search?ts_query_web=log2rbac)
 [![License: MIT](https://img.shields.io/badge/License-Apache_2.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
 ![Last Commit](https://img.shields.io/github/last-commit/jkremser/log2rbac-operator)
+[![doc.crds.dev](https://img.shields.io/badge/doc-crds-yellowgreen)](https://doc.crds.dev/github.com/jkremser/log2rbac-operator)
 <!-- [![Docker Pulls](https://img.shields.io/docker/pulls/jkremser/log2rbac.svg)](https://hub.docker.com/r/jkremser/log2rbac) -->
 
 # log2rbac-operator

@@ -49,10 +49,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v2
+        uses: goreleaser/goreleaser-action@v3
         with:
-          version: v1.7.0
+          version: v1.9.2
           args: release --rm-dist --release-notes=changes
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASER_TOKEN }}
-
+      - name: Send http get to doc.crds.dev to index a new version
+        run: |
+          curl -sL https://doc.crds.dev/github.com/jkremser/log2rbac-operator@${{ github.ref_name }} | grep -A2 'class="container"'
