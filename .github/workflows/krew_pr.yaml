@@ -1,0 +1,55 @@
+name: Krew index PR
+
+on:
+  workflow_dispatch:
+
+jobs:
+  krew-pr:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Get Version
+        id: get_version
+        run: |
+          version=$(cat kubectl-plugin/VERSION)
+          echo "Version: ${version}"
+          echo "::set-output name=version::${version}"
+
+      - uses: actions/checkout@v2
+        with:
+          repository: kubernetes-sigs/krew-index
+          path: sandbox
+          token: ${{ secrets.RELEASER_TOKEN }}
+
+      - name: Copy the plugin
+        run: |
+          mkdir -p $GITHUB_WORKSPACE/sandbox/plugins/
+          cp $GITHUB_WORKSPACE/kubectl-plugin/log2rbac.yaml $GITHUB_WORKSPACE/sandbox/plugins/log2rbac.yaml
+
+      - name: Open Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.RELEASER_TOKEN }}
+          push-to-fork: jkremser/krew-index
+          path: sandbox
+          commit-message: new version v${{ steps.get_version.outputs.version }} of log2rbac
+          title: release new version v${{ steps.get_version.outputs.version }} of log2rbac
+          body: |
+            :package: Update log2rbac kubectl plugin :package:
+
+            hey krew-index team,
+            Iwould like to open this PR to publish version `v${{ steps.get_version.outputs.version }}` of `log2rbac` on behalf of @jkremser.
+
+            This automated PR was created by [this action][1] run.
+
+            [1]: https://github.com/jkremser/log2rbac-operator/actions/runs/${{ github.run_id }}
+          branch: log2rbac-krew-${{ steps.get_version.outputs.version }}
+          delete-branch: true
+          signoff: true
+
+      - name: Check PR
+        run: |
+          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
+          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
