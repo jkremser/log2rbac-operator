@@ -20,6 +20,9 @@ Role can be either existing one or operator can create a new one for you and bin
 - `ReplicaSet`
 - or key-value pair specifying the pod selector
 
+[![Watch the full asciicast](./demo.gif)](https://asciinema.org/a/504672)
+([pauseable demo](https://asciinema.org/a/504672))
+
 This project is conceptually very similar to [`audit2rbac`](https://github.com/liggitt/audit2rbac). The main distinction here is that `log2rbac` is based on the 
 controller pattern and on the output from the workloads, while `audit2rbac` uses the k8s' audit log and it's a "one-pass" CLI tool.
 
@@ -46,13 +49,13 @@ Now when the operator was installed, let's deploy something that needs the speci
 
 ```bash
 kubectl create ns monitoring
-kubectl apply -f https://github.com/prometheus-operator/kube-prometheus/raw/v0.10.0/manifests/prometheusOperator-deployment.yaml
+kubectl apply -n monitoring -f https://github.com/prometheus-operator/kube-prometheus/raw/v0.10.0/manifests/prometheusOperator-deployment.yaml
 ```
 
 This deployment will fail to start because of the missing rights to do its stuff. Let's request the RBAC negotiation process.
 
 ```bash
-# create RbacNegotiation for k8gb
+# create RbacNegotiation for Prometheus operator
 cat <<CustomResource | kubectl apply -f -
 apiVersion: kremser.dev/v1
 kind: RbacNegotiation
