@@ -70,7 +70,7 @@ spec:
     kind: Deployment
     name: prometheus-operator
   role:
-    name: new-prome-operator-role
+    name: foo
     isClusterRole: true
     createIfNotExist: true
 CustomResource
@@ -79,8 +79,8 @@ CustomResource
 ```bash
 # After some time, the Prometheus Operator should start and we should see.
 
-k describe clusterrole new-prome-operator-role
-Name:         new-prome-operator-role
+k describe clusterrole foo
+Name:         foo
 Labels:       <none>
 Annotations:  app.kubernetes.io/created-by=log2rbac
 PolicyRule:
@@ -93,6 +93,14 @@ PolicyRule:
   alertmanagerconfigs.monitoring.coreos.com  []                 []              [list]
   alertmanagers.monitoring.coreos.com        []                 []              [list]
   ...
+```
+
+Note: This set of rights was necessary only for the Prometheus operator to start. Once we start interacting with the subject of our RBAC negotiation process, the new code paths will be executed and possibly new rights will be requested. It might be a good idea to run e2e tests or at least have some script that calls the Prometheus operator's functionality (CRUDing all its CRDs). Last but not least, once we are happy with the resulting role and the rights it got, we should delete the RBAC negotiation custom resource to reduce the attack surface on our cluster.
+
+You may want to capture the role in yaml format and store it as part of your infrastructure code in git:
+
+```bash
+k get clusterrole foo -o yaml | k neat
 ```
 
 ## Kubectl Plugin
