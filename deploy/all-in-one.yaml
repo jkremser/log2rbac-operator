@@ -25,18 +25,33 @@ spec:
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
-    - jsonPath: .spec.for.kind
-      name: kind
+    - description: For which kind the rbac negotiation was requested
+      jsonPath: .spec.for.kind
+      name: for kind
       type: string
-    - jsonPath: .spec.for.name
-      name: name
+    - description: Name of the {kind}
+      jsonPath: .spec.for.name
+      name: for name
       type: string
-    - jsonPath: .spec.role.name
-      name: role
-      type: string
-    - jsonPath: .spec.status.status
+    - description: State of the negotiation
+      jsonPath: .status.status
       name: status
       type: string
+    - description: Name of the associated role
+      jsonPath: .spec.role.name
+      name: role
+      priority: 10
+      type: string
+    - description: How many RBAC entries have been added to the role
+      jsonPath: .status.entriesAdded
+      name: entries
+      priority: 12
+      type: string
+    - description: When the last reconciliation was done
+      jsonPath: .status.lastCheck
+      name: checked
+      priority: 13
+      type: date
     name: v1
     schema:
       openAPIV3Schema:
@@ -106,6 +121,23 @@ spec:
             type: object
           status:
             description: RbacNegotiationStatus defines the observed state of RbacNegotiation
+            properties:
+              entriesAdded:
+                format: int32
+                minimum: 0
+                type: integer
+              lastCheck:
+                format: date-time
+                type: string
+              status:
+                default: Requested
+                enum:
+                - Requested
+                - InProgress
+                - Error
+                - Stable
+                - Synced
+                type: string
             type: object
         type: object
         x-kubernetes-preserve-unknown-fields: true
@@ -303,28 +335,11 @@ spec:
     spec:
       containers:
       - args:
-        - --secure-listen-address=0.0.0.0:8443
-        - --upstream=http://127.0.0.1:8080/
-        - --logtostderr=true
-        - --v=10
-        image: gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
-        name: kube-rbac-proxy
-        ports:
-        - containerPort: 8443
-          name: https
-          protocol: TCP
-        securityContext:
-          allowPrivilegeEscalation: false
-          readOnlyRootFilesystem: true
-          runAsNonRoot: true
-      - args:
-        - --health-probe-bind-address=:8081
-        - --metrics-bind-address=127.0.0.1:8080
         - --leader-elect
         command:
         - /log2rbac
         image: jkremser/log2rbac:latest
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
             path: /healthz
@@ -348,8 +363,8 @@ spec:
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
-          runAsNonRoot: true
+          runAsNonRoot: false
       securityContext:
-        runAsNonRoot: true
+        runAsNonRoot: false
       serviceAccountName: log2rbac
       terminationGracePeriodSeconds: 10
