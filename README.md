@@ -1,7 +1,7 @@
 [![CI](https://github.com/jkremser/log2rbac-operator/workflows/CI/badge.svg?branch=master)](https://github.com/jkremser/log2rbac-operator/actions/workflows/ci.yaml?query=workflow%3A%22CI%22+branch%3Amaster)
 [![GitHub release](https://img.shields.io/github/release/jkremser/log2rbac-operator/all.svg?style=flat-square)](https://github.com/jkremser/log2rbac-operator/releases) 
 [![Go Report Card](https://goreportcard.com/badge/github.com/jkremser/log2rbac-operator)](https://goreportcard.com/report/github.com/jkremser/log2rbac-operator)
-[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/log2rbac-operator)](https://artifacthub.io/packages/search?ts_query_web=log2rbac)
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/log2rbac)](https://artifacthub.io/packages/search?ts_query_web=log2rbac)
 [![License: MIT](https://img.shields.io/badge/License-Apache_2.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
 ![Last Commit](https://img.shields.io/github/last-commit/jkremser/log2rbac-operator)
 [![doc.crds.dev](https://img.shields.io/badge/doc-crds-yellowgreen)](https://doc.crds.dev/github.com/jkremser/log2rbac-operator)
