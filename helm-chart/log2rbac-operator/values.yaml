@@ -1,7 +1,7 @@
 # Default values for log2rbac-operator.
 
 # what should be deployed
-deploy:
+d3ploy:
   # -- whether the rbac resources should be also deployed (ServiceAccount, ClusterRole, ClusterRoleBinding)
   rbac: true
   # -- whether the operator itself should be deployed (Deployment)
