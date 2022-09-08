@@ -114,6 +114,9 @@ func main() {
 	cleanup := internal.SetupTracing(cfg, ctx, setupLog)
 	defer cleanup()
 
+	// simple http server listening on /
+	internal.ServeRoot(mgr, *cfg.App)
+
 	// todo: check here if the CRD is there and if not, create it
 
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
