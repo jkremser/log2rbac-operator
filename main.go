@@ -115,7 +115,10 @@ func main() {
 	defer cleanup()
 
 	// simple http server listening on /
-	internal.ServeRoot(mgr, *cfg.App)
+	if err := internal.ServeRoot(mgr, *cfg.App); err != nil {
+		setupLog.Error(err, "unable to set up http handler for root /")
+		os.Exit(1)
+	}
 
 	// todo: check here if the CRD is there and if not, create it
 

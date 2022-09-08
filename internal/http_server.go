@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"strings"
 )
+
+var httpLog = ctrl.Log.WithName("http-server")
 
 func sanitize(i string) string {
 	return strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(i, "<", ""), ">", ""), "&", "")
@@ -39,7 +42,10 @@ func getContent(cfg AppConfig) string {
 
 func getServeHTTPFunc(content string) func(http.ResponseWriter, *http.Request) {
 	return func (w http.ResponseWriter, r *http.Request) {
-		io.WriteString(w, content)
+		_, err := io.WriteString(w, content)
+		if err != nil {
+			httpLog.Error(err, "Error when querying /")
+		}
 	}
 }
 
