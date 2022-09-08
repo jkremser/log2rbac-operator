@@ -51,5 +51,6 @@ func getServeHTTPFunc(content string) func(http.ResponseWriter, *http.Request) {
 
 func ServeRoot(mgr manager.Manager, cfg AppConfig) error {
 	content := getContent(cfg)
+	mgr.GetLogger()
 	return mgr.AddMetricsExtraHandler("/", http.HandlerFunc(getServeHTTPFunc(content)))
 }
