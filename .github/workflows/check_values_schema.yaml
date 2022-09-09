@@ -22,6 +22,7 @@ jobs:
           VALUES_FILE=helm-chart/log2rbac-operator/values.yaml
           SCHEMA_FILE=helm-chart/log2rbac-operator/values.schema.json
 
+
           # check if the values.json is covered by the schema
           pip3 install json-spec
           yq -o=json eval ${VALUES_FILE} > /tmp/values.json
