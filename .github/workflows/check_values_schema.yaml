@@ -1,7 +1,12 @@
 # thanks to https://github.com/giantswarm/devctl/blob/v5.9.0/pkg/gen/input/workflows/internal/file/check_values_schema.yaml.template
 
 name: 'Check if values schema file has been updated'
-on: pull_request
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'helm-chart/log2rbac-operator/**'
 
 jobs:
   check:
@@ -20,29 +25,39 @@ jobs:
             # get a list of files changed in the PR
             CHANGED_FILES=$(gh api repos/{owner}/{repo}/compare/${GITHUB_BASE_REF}...${GITHUB_HEAD_REF} \
               --jq ".files[].filename")
+
             # check if values.yaml in main chart was modified by this PR
             # (this won't check values files in subcharts)
-            if grep -q 'helm\/[-a-z].*\/values.yaml' <<< "${CHANGED_FILES}" ; then
+            if grep -q 'helm\(-chart\)\?\/[-a-z].*\/values.yaml' <<< "${CHANGED_FILES}" ; then
               # get the path to values.yaml
               VALUES_FILE=$(gh api repos/{owner}/{repo}/compare/${GITHUB_BASE_REF}...${GITHUB_HEAD_REF} \
-                --jq ".files[].filename" | grep 'helm\/[-a-z].*\/values.yaml')
+                --jq ".files[].filename" | grep 'helm\(-chart\)\?\/[-a-z].*\/values.yaml')
+
+              # get the path to values.schema.json
+              SCHEMA_FILE=$(gh api repos/{owner}/{repo}/compare/${GITHUB_BASE_REF}...${GITHUB_HEAD_REF} \
+                --jq ".files[].filename" | grep 'helm\(-chart\)\?\/[-a-z].*\/values.schema.json')
+
               # fetch branches so we can use them to compare
               git fetch &> /dev/null
               # calculate hash of the keys from values.yaml from the default branch
               DEFAULT_BRANCH_SHA=$(git show origin/${GITHUB_BASE_REF}:${VALUES_FILE} \
                 | yq -P 'sort_keys(..)' -o=json | jq -r '[paths | join(".")]' \
                 | sha1sum | awk '{print $1}')
+
               # calculate hash of the keys from values.yaml from this branch
               THIS_BRANCH_SHA=$(git show origin/${GITHUB_HEAD_REF}:${VALUES_FILE} \
                 | yq -P 'sort_keys(..)' -o=json | jq -r '[paths | join(".")]' \
                 | sha1sum | awk '{print $1}')
+
               # compare hashes of the values files
               if [[ "${DEFAULT_BRANCH_SHA}" != "${THIS_BRANCH_SHA}" ]]; then
-                # values file structure has been modified so we need to ensure the schema
-                # file is also updated
+                # values file structure has been modified so we need to ensure the schema file is also updated
                 if grep -q "values.schema.json" <<< "${CHANGED_FILES}" ; then
-                  # we assume that the schema has been updated, nothing to do
-                  echo "PASSED: values.yaml and values.schema.json both appear to have been updated"
+                  # check if the values.json is covered by the schema
+                  pip3 install json-spec
+                  yq -o=json eval ${VALUES_FILE} > /tmp/values.json
+                  json validate --schema-file=${SCHEMA_FILE} --document-file=/tmp/values.json
+                  echo "PASSED: values.yaml and values.schema.json both appear to have been updated and the document is valid against the schema"
                   exit 0
                 else
                   # schema must be updated

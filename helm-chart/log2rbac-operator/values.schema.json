@@ -1,11 +1,9 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "values.yaml for log2rbac helm chart",
     "$ref": "#/definitions/All",
     "definitions": {
         "All": {
             "type": "object",
-            "required": [],
             "additionalProperties": false,
             "properties": {
                 "deploy": {
@@ -54,7 +52,6 @@
         },
         "Deploy": {
             "type": "object",
-            "required": [],
             "additionalProperties": false,
             "properties": {
                 "rbac": {
@@ -76,7 +73,6 @@
         },
         "Image": {
             "type": "object",
-            "required": [],
             "additionalProperties": false,
             "properties": {
                 "repository": {
@@ -97,7 +93,6 @@
         },
         "Metrics": {
             "type": "object",
-            "required": [],
             "additionalProperties": false,
             "properties": {
                 "enabled": {
@@ -125,7 +120,6 @@
         },
         "Tracing": {
             "type": "object",
-            "required": [],
             "additionalProperties": false,
             "properties": {
                 "enabled": {
@@ -152,7 +146,6 @@
         },
         "Operator": {
             "type": "object",
-            "required": [],
             "additionalProperties": false,
             "properties": {
                 "colors": {
@@ -166,7 +159,6 @@
                 },
                 "syncIntervals": {
                     "type": "object",
-                    "required": [],
                     "properties": {
                         "afterNoRbacEntry": {
                             "type": "integer",
