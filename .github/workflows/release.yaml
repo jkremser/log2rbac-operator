@@ -10,6 +10,9 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
+      COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+      COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+      COSIGN_PUBLIC_KEY: ${{ secrets.COSIGN_PUBLIC_KEY }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -44,7 +47,7 @@ jobs:
       - name: Login to Dockerhub
         uses: docker/login-action@v1
         with:
-          username: ${{ secrets.DOCKER_USER }}
+          username: ${{ github.actor }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Login to ghcr.io
@@ -70,22 +73,35 @@ jobs:
       - name: Sign with Cosign
         id: sign
         run: |
-          ./hack/slsa/sign-image.sh ${{ github.ref_name }}
+          DEBUG=true ./hack/slsa/sign-image.sh ${{ github.ref_name }}
           digest=$(DIGEST_ONLY=true ./hack/slsa/sign-image.sh ${{ github.ref_name }})
           echo "::set-output name=digest::${digest}"
 
-      - name: Generate SLSA Provenance
+      - name: Generate SLSA Provenance (docker.io)
         uses: philips-labs/slsa-provenance-action@v0.8.0
         with:
           command: generate
           subcommand: container
-          arguments: --digest ${{ steps.sign.outputs.digest }} --tags ${{ github.ref_name }}
+          arguments: |
+           --repository "docker.io/jkremser/log2rbac"
+           --digest ${{ steps.sign.outputs.digest }}
+           --tags ${{ github.ref_name }}
+           --output-path docker.io.provenance
+
+      - name: Generate SLSA Provenance (ghcr.io)
+        uses: philips-labs/slsa-provenance-action@v0.8.0
+        with:
+          command: generate
+          subcommand: container
+          arguments: |
+           --repository "ghcr.io/jkremser/log2rbac"
+           --digest ${{ steps.sign.outputs.digest }}
+           --tags ${{ github.ref_name }}
+           --output-path ghcr.io.provenance
 
       - name: Attach SLSA Provenance
-        env:
-          PROVENANCE: "true"
         run: |
-          ./hack/slsa/sign-image.sh ${{ github.ref_name }}
+          PROVENANCE=true DEBUG=true ./hack/slsa/sign-image.sh ${{ github.ref_name }}
 
       - name: Upload SLSA Provenance
         uses: actions/upload-artifact@v2
