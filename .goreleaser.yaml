@@ -33,6 +33,13 @@ dockers:
         "--label=org.opencontainers.image.revision={{ .FullCommit }}"
       - &LABEL4
         "--label=org.opencontainers.image.version={{ .Version }}"
+      - &LABEL5
+        "--label=org.opencontainers.image.source=https://github.com/jkremser/log2rbac-operator"
+      - &LABEL6
+        "--label=org.opencontainers.image.licenses=Apache-2.0"
+      - &LABEL7
+        "--label=org.opencontainers.image.created={{ time "2000-01-01T12:00:05Z07:00" }}"
+
   - image_templates:
       - "docker.io/jkremser/{{ .ProjectName }}:v{{ .Version }}-arm64"
       - "ghcr.io/jkremser/{{ .ProjectName }}:v{{ .Version }}-arm64"
@@ -43,6 +50,9 @@ dockers:
       - *LABEL2
       - *LABEL3
       - *LABEL4
+      - *LABEL5
+      - *LABEL6
+      - *LABEL7
 docker_manifests:
   - name_template: docker.io/jkremser/{{ .ProjectName }}:{{ .Tag }}
     image_templates:
