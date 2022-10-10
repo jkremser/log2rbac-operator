@@ -18,8 +18,8 @@ jobs:
     name: Lint
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
+      - uses: actions/checkout@v3.1.0
+      - uses: actions/setup-go@v3
         with:
           go-version: ${{ env.GOLANG_VERSION }}
 
@@ -39,8 +39,8 @@ jobs:
     runs-on: ubuntu-20.04
     needs: lint
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
+      - uses: actions/checkout@v3.1.0
+      - uses: actions/setup-go@v3
         with:
           go-version: ${{ env.GOLANG_VERSION }}
 
@@ -59,8 +59,8 @@ jobs:
     runs-on: ubuntu-20.04
     needs: build-and-test
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
+      - uses: actions/checkout@v3.1.0
+      - uses: actions/setup-go@v3
         with:
           go-version: ${{ env.GOLANG_VERSION }}
 
@@ -70,7 +70,7 @@ jobs:
           go get -u github.com/rakyll/gotest &> /dev/null
 
       - name: Login to Dockerhub
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2.1.0
         with:
           username: ${{ github.actor }}
           password: ${{ secrets.DOCKER_PASSWORD }}

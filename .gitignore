@@ -27,6 +27,11 @@ changes
 #semgrep
 semgrep.sarif
 
+# SLSA
+cosign.key
+*.sig
+*.att
+
 # mac
 .DS_Store
 

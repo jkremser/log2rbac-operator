@@ -20,7 +20,7 @@ jobs:
   olm-bundle-pr:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3.1.0
         with:
           fetch-depth: 0
 
@@ -49,7 +49,7 @@ jobs:
           rm ./olm/bundle/Dockerfile
           cp -r ./olm/bundle $GITHUB_WORKSPACE/
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3.1.0
         with:
           repository: ${{ github.event.inputs.upstreamRepo }}
           path: sandbox

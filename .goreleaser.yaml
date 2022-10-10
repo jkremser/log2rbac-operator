@@ -5,6 +5,7 @@ before:
 builds:
   - env:
       - CGO_ENABLED=0
+      - DOCKER_CLI_EXPERIMENTAL=enabled
     main: ./main.go
     binary: ./bin/log2rbac
     goos:
@@ -16,13 +17,28 @@ builds:
       - -trimpath
     ldflags:
       - -s -w -X main.version={{ .Tag }} -X main.gitSha={{ .Commit }}
+    mod_timestamp: "{{ .CommitTimestamp }}"
 archives:
-  - format: binary
+  - id: binary
+    format: binary
     name_template: "{{ .ProjectName }}_{{ .Os }}-{{ .Arch }}"
+  - id: archive
+    format: tar.gz
+    replacements:
+      darwin: macOS
+    files:
+      - LICENSE*
+      - README*
+      - cosign.pub
+      - dist/*.sig
+    format_overrides:
+      - goos: windows
+        format: zip
 dockers:
   - image_templates:
       - "docker.io/jkremser/{{ .ProjectName }}:v{{ .Version }}-amd64"
       - "ghcr.io/jkremser/{{ .ProjectName }}:v{{ .Version }}-amd64"
+    use: buildx
     build_flag_templates:
       - "--platform=linux/amd64"
       - &LABEL1
@@ -37,12 +53,11 @@ dockers:
         "--label=org.opencontainers.image.source=https://github.com/jkremser/log2rbac-operator"
       - &LABEL6
         "--label=org.opencontainers.image.licenses=Apache-2.0"
-      - &LABEL7
-        "--label=org.opencontainers.image.created={{ time "2000-01-01T12:00:05Z07:00" }}"
 
   - image_templates:
       - "docker.io/jkremser/{{ .ProjectName }}:v{{ .Version }}-arm64"
       - "ghcr.io/jkremser/{{ .ProjectName }}:v{{ .Version }}-arm64"
+    use: buildx
     goarch: arm64
     build_flag_templates:
       - "--platform=linux/arm64"
@@ -52,7 +67,6 @@ dockers:
       - *LABEL4
       - *LABEL5
       - *LABEL6
-      - *LABEL7
 docker_manifests:
   - name_template: docker.io/jkremser/{{ .ProjectName }}:{{ .Tag }}
     image_templates:
@@ -62,9 +76,93 @@ docker_manifests:
     image_templates:
       - ghcr.io/jkremser/{{ .ProjectName }}:v{{ .Version }}-amd64
       - ghcr.io/jkremser/{{ .ProjectName }}:v{{ .Version }}-arm64
+sboms:
+  - id: archive-sbom
+    cmd: syft
+    args: ["${artifact}", "--file", "${artifact}.sbom.json", "--output", "spdx-json"]
+    documents:
+      - "${artifact}.sbom.json"
+    artifacts: archive
+
+signs:
+  - id: checksums
+    cmd: cosign
+    stdin: '{{ .Env.COSIGN_PASSWORD }}'
+    output: true
+    artifacts: checksum
+    args:
+      - sign-blob
+      - --key
+      - cosign.key
+      - '--output-certificate=${certificate}'
+      - '--output-signature=${signature}'
+      - '${artifact}'
+  - id: binaries
+    cmd: cosign
+    stdin: '{{ .Env.COSIGN_PASSWORD }}'
+    output: true
+    artifacts: binary
+    args:
+      - sign-blob
+      - --key
+      - cosign.key
+      - '--output-certificate=${certificate}'
+      - '--output-signature=${signature}'
+      - '${artifact}'
+  - id: archives
+    cmd: cosign
+    stdin: '{{ .Env.COSIGN_PASSWORD }}'
+    output: true
+    artifacts: archive
+    args:
+      - sign-blob
+      - --key
+      - cosign.key
+      - '--output-certificate=${certificate}'
+      - '--output-signature=${signature}'
+      - '${artifact}'
+  - id: sboms
+    cmd: cosign
+    stdin: '{{ .Env.COSIGN_PASSWORD }}'
+    output: true
+    artifacts: sbom
+    args:
+      - sign-blob
+      - --key
+      - cosign.key
+      - '--output-certificate=${certificate}'
+      - '--output-signature=${signature}'
+      - '${artifact}'
+
+docker_signs:
+  - cmd: cosign
+    artifacts: all
+    output: true
+    args:
+      - 'sign'
+      - --key
+      - cosign.key
+      - '${artifact}'
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - Merge pull request
+      - Merge branch
+
 checksum:
   name_template: 'checksums.txt'
+
 snapshot:
   name_template: "{{ .Version }}-{{ .ShortCommit }}"
+
 release:
   draft: false
+  extra_files:
+    - glob: "./cosign.pub"
+  footer: |
+    :rocket:
