@@ -89,7 +89,6 @@ jobs:
   sbom:
     name: sbom
     needs: [release]
-    if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-20.04
     env:
       TAGS: "${{ needs.release.outputs.container_tags }}"
@@ -137,7 +136,6 @@ jobs:
   provenance:
     name: provenance
     needs: [release]
-    if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-20.04
     steps:
       - name: Generate provenance for Release
@@ -181,7 +179,6 @@ jobs:
   container-provenance:
     name: container-provenance
     needs: [release]
-    if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-20.04
 
     strategy:
@@ -237,7 +234,6 @@ jobs:
   crds:
     needs: [sbom, provenance, container-provenance]
     name: Ping doc.crds.dev
-    if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-20.04
     steps:
       - name: Send http get to doc.crds.dev to index a new version
@@ -247,7 +243,6 @@ jobs:
   slsa-summary:
     name: Summary
     needs: [crds, release]
-    if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-20.04
     env:
       TAGS: "${{ needs.release.outputs.container_tags }}"
@@ -289,7 +284,7 @@ jobs:
                 echo '```'
                 echo ":green_book: SLSA Provenance file is attested. You can verify it with the following command:"
                 echo '```bash'
-                echo "cosign verify-attestation --key cosign.pub --type slsaprovenance ${repo}}@${digest} \\"
+                echo "cosign verify-attestation --key cosign.pub --type slsaprovenance ${repo}@${digest} \\"
                 echo " | jq '.payload |= @base64d | .payload | fromjson | select(.predicateType==\"https://slsa.dev/provenance/v0.2\" ) | .'"
                 echo '```'
                 echo "---"
