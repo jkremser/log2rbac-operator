@@ -238,7 +238,7 @@ jobs:
     steps:
       - name: Send http get to doc.crds.dev to index a new version
         run: |
-          curl -sL https://doc.crds.dev/github.com/jkremser/log2rbac-operator@${{ github.ref_name }} | grep -A2 'class="container"'
+          curl -sL https://doc.crds.dev/github.com/${GITHUB_REPOSITORY}@${{ github.ref_name }} | grep -A2 'class="container"'
 
   slsa-summary:
     name: Summary
@@ -253,14 +253,14 @@ jobs:
         run: |
           {
             echo "# :seedling: Release Summary"
-            echo "- version: [${{ github.ref_name }}](https://github.com/jkremser/log2rbac-operator/tree/${{ github.ref_name }})"
+            echo "- version: [${{ github.ref_name }}](https://github.com/${GITHUB_REPOSITORY}/tree/${{ github.ref_name }})"
             echo '- git sha: [`'$(echo ${GITHUB_SHA} | cut -c1-8)'`](https://github.com/jkremser/log2rbac-operator/commit/'${GITHUB_SHA}')'
             echo '- SCM: [:octocat:`'/jkremser/log2rbac-operator'`](https://github.com/jkremser/log2rbac-operator)'
-            echo "- self reference: [action run #${{ github.run_id }}](https://github.com/jkremser/log2rbac-operator/actions/runs/${{ github.run_id }})"
-            echo "- release page: [${{ github.ref_name }}](https://github.com/jkremser/log2rbac-operator/releases/tag/${{ github.ref_name }})"
-            echo "- this github workflow (code): [ci.yaml](https://github.com/jkremser/log2rbac-operator/blob/${GITHUB_SHA}/.github/workflows/ci.yaml)"
+            echo "- self reference: [action run #${{ github.run_id }}](https://github.com/${GITHUB_REPOSITORY}/actions/runs/${{ github.run_id }})"
+            echo "- release page: [${{ github.ref_name }}](https://github.com/${GITHUB_REPOSITORY}/releases/tag/${{ github.ref_name }})"
+            echo "- this github workflow (code): [ci.yaml](https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_SHA}/.github/workflows/ci.yaml)"
             echo "- container images at dockerhub: [docker.io/jkremser/log2rbac](https://hub.docker.com/r/jkremser/log2rbac/tags)"
-            echo "- container images at ghcr.io: [ghcr.io/jkremser/log2rbac](https://github.com/jkremser/log2rbac-operator/pkgs/container/log2rbac)"
+            echo "- container images at ghcr.io: [ghcr.io/jkremser/log2rbac](https://github.com/${GITHUB_REPOSITORY}/pkgs/container/log2rbac)"
             echo ""
             echo "## :closed_lock_with_key: Secure Software Supply Chain"
             echo ""
@@ -296,7 +296,7 @@ jobs:
             echo
             echo 'Instead of using `--key cosign.pub` that requires having the public key locally present, you can alternatively use:'
             echo '```bash'
-            echo "cosign verify --key https://github.com/jkremser/log2rbac-operator/blob/${{ github.ref_name }}/cosign.pub \${image}"
+            echo "cosign verify --key https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${{ github.ref_name }}/cosign.pub \${image}"
             echo '```'
             echo
             echo "---"
