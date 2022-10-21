@@ -102,7 +102,7 @@ jobs:
 
     steps:
       - name: Install cosign
-        uses: sigstore/cosign-installer@v2.7.0
+        uses: sigstore/cosign-installer@v2.8.1
         with:
           cosign-release: 'v1.12.1'
 
@@ -157,7 +157,7 @@ jobs:
           [ "x${{steps.provenance-step.outcome}}" == "xfailure" ] && echo ":x: Uploading provenance for release failed, make sure to delete all the previous releases in GitHub web api before releasing." > "$GITHUB_STEP_SUMMARY" || true
 
       - name: Install cosign
-        uses: sigstore/cosign-installer@v2.7.0
+        uses: sigstore/cosign-installer@v2.8.1
         with:
           cosign-release: 'v1.12.1'
 
@@ -191,7 +191,7 @@ jobs:
 
     steps:
       - name: Install cosign
-        uses: sigstore/cosign-installer@v2.7.0
+        uses: sigstore/cosign-installer@v2.8.1
         with:
           cosign-release: 'v1.12.1'
 

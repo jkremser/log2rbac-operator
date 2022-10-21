@@ -28,7 +28,7 @@ jobs:
 
       # see: https://golangci-lint.run/usage/configuration/#config-file
       - name: Lint using golangci-lint
-        uses: golangci/golangci-lint-action@v3.1.0
+        uses: golangci/golangci-lint-action@v3.3.0
         with:
           args: --timeout=120s
           skip-cache: true

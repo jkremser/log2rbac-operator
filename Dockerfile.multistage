@@ -1,5 +1,5 @@
 # build args
-ARG GOLANG_VERSION=1.19.1
+ARG GOLANG_VERSION=1.19.2
 
 # Build the log2rbac binary
 FROM docker.io/golang:${GOLANG_VERSION} as builder
