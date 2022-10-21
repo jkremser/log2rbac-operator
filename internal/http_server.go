@@ -41,7 +41,7 @@ func getContent(cfg AppConfig) string {
 }
 
 func getServeHTTPFunc(content string) func(http.ResponseWriter, *http.Request) {
-	return func (w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		_, err := io.WriteString(w, content)
 		if err != nil {
 			httpLog.Error(err, "Error when querying /")
