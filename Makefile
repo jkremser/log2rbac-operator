@@ -24,7 +24,7 @@ endif
 SHELL = /usr/bin/env bash -o pipefail
 .SHELLFLAGS = -ec
 
-GOLANG_VERSION ?= 1.17.5
+GOLANG_VERSION ?= 1.19.1
 
 .PHONY: all
 all: build
