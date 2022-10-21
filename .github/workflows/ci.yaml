@@ -35,7 +35,7 @@ jobs:
 
       - name: gokart
         run: |
-          go install github.com/praetorian-inc/gokart@v0.2.0
+          go install github.com/praetorian-inc/gokart@v0.5.1
           gokart scan --globalsTainted
 
   build-and-test:
