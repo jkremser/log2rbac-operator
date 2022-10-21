@@ -12,13 +12,12 @@ on:
 env:
   IMG: candidate
   GOLANG_VERSION: 1.17.5
+  DOCKER_ORG: jkremser
 
 jobs:
   lint:
     name: Lint
     runs-on: ubuntu-20.04
-    env:
-      DOCKER_ORG: jkremser
     steps:
       - uses: actions/checkout@v3.1.0
       - uses: actions/setup-go@v3
