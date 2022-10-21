@@ -55,8 +55,8 @@ jobs:
 
       - name: Test
         run: |
-          go get -u github.com/rakyll/gotest &> /dev/null
-          gotest ./...
+          curl -s https://gotest-release.s3.amazonaws.com/gotest_linux > gotest && chmod +x gotest
+          ./gotest ./...
 
   e2e-on-k8s:
     name: e2e tests against kubernetes
@@ -71,6 +71,7 @@ jobs:
       - name: Install stuff
         run: |
           curl -s https://raw.githubusercontent.com/rancher/k3d/main/install.sh | bash
+          curl -s https://gotest-release.s3.amazonaws.com/gotest_linux > gotest && chmod +x gotest
           go get -u github.com/rakyll/gotest &> /dev/null
 
       - name: Login to Dockerhub
@@ -98,7 +99,7 @@ jobs:
 
       - name: Test
         run: |
-          cd e2e-test/ && go mod download && gotest ./...
+          cd e2e-test/ && ../gotest ./...
 
       - name: Push the :latest container image
         run: |

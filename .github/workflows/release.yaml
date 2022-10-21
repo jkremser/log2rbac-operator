@@ -259,7 +259,7 @@ jobs:
             echo "- version: [${{ github.ref_name }}](https://github.com/${GITHUB_REPOSITORY}/tree/${{ github.ref_name }})"
             echo '- git sha: [`'$(echo ${GITHUB_SHA} | cut -c1-8)'`](https://github.com/jkremser/log2rbac-operator/commit/'${GITHUB_SHA}')'
             echo '- SCM: [:octocat:`'/jkremser/log2rbac-operator'`](https://github.com/jkremser/log2rbac-operator)'
-            echo "- self reference: [action run #${{ github.run_id }}](https://github.com/${GITHUB_REPOSITORY}/actions/runs/${{ github.run_id }})"
+            echo "- self reference: [action run :running: #${{ github.run_id }}](https://github.com/${GITHUB_REPOSITORY}/actions/runs/${{ github.run_id }})"
             echo "- release page: [${{ github.ref_name }}](https://github.com/${GITHUB_REPOSITORY}/releases/tag/${{ github.ref_name }})"
             echo "- this github workflow (code): [ci.yaml](https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_SHA}/.github/workflows/ci.yaml)"
             echo "- container images at dockerhub: [docker.io/jkremser/log2rbac](https://hub.docker.com/r/jkremser/log2rbac/tags)"
