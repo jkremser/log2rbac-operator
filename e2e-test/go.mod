@@ -9,7 +9,7 @@ require (
 	k8s.io/api v0.25.3
 	k8s.io/apiextensions-apiserver v0.25.3
 	k8s.io/apimachinery v0.25.3
-	k8s.io/client-go v0.25.3
+	k8s.io/client-go/v11 v11.0.0+incompatible
 )
 
 require (
