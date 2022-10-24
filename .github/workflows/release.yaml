@@ -20,6 +20,11 @@ jobs:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
       COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@2e205a28d0e1da00c5f53b161f4067b052c61f34
+        with:
+          egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+
       - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3.1.0
         with:
           fetch-depth: 0
@@ -36,7 +41,7 @@ jobs:
           go-version: ${{ env.GOLANG_VERSION }}
 
       - name: Install Cosign
-        uses: sigstore/cosign-installer@main
+        uses: sigstore/cosign-installer@7bca8b41164994a7dc93749d266e2f1db492f8a2
         with:
           cosign-release: 'v1.12.1'
 
@@ -101,6 +106,11 @@ jobs:
         repo: ${{ fromJSON(needs.release.outputs.container_repos) }}
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@2e205a28d0e1da00c5f53b161f4067b052c61f34
+        with:
+          egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+
       - name: Install cosign
         uses: sigstore/cosign-installer@9becc617647dfa20ae7b1151972e9b3a2c338a2b # tag=v2.8.1
         with:
@@ -141,6 +151,11 @@ jobs:
     needs: [release]
     runs-on: ubuntu-20.04
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@2e205a28d0e1da00c5f53b161f4067b052c61f34
+        with:
+          egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+
       - name: Generate provenance for Release
         uses: philips-labs/slsa-provenance-action@752766b8a3b1ebd09d599e163eeec8fa39e677aa # tag=v0.8.0
         id: provenance-step
@@ -190,6 +205,11 @@ jobs:
         container: ${{ fromJSON(needs.release.outputs.container_info) }}
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@2e205a28d0e1da00c5f53b161f4067b052c61f34
+        with:
+          egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+
       - name: Install cosign
         uses: sigstore/cosign-installer@9becc617647dfa20ae7b1151972e9b3a2c338a2b # tag=v2.8.1
         with:
@@ -239,6 +259,11 @@ jobs:
     name: Ping doc.crds.dev
     runs-on: ubuntu-20.04
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@2e205a28d0e1da00c5f53b161f4067b052c61f34
+        with:
+          egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+
       - name: Send http get to doc.crds.dev to index a new version
         run: |
           curl -sL https://doc.crds.dev/github.com/${GITHUB_REPOSITORY}@${{ github.ref_name }} | grep -A2 'class="container"'
@@ -252,6 +277,11 @@ jobs:
       REPOS: "${{ join(fromJSON(needs.release.outputs.container_repos), ' ') }}"
       CONTAINER_INFO: "${{ needs.release.outputs.container_info }}"
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@2e205a28d0e1da00c5f53b161f4067b052c61f34
+        with:
+          egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
+
       - name: Make summary for the pipeline
         run: |
           {
