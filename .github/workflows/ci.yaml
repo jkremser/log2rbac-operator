@@ -30,8 +30,7 @@ jobs:
       - name: Lint using golangci-lint
         uses: golangci/golangci-lint-action@v3.3.0
         with:
-          args: --timeout=120s
-          skip-cache: true
+          args: --timeout=4m --verbose
 
       - name: gokart
         run: |
