@@ -5,7 +5,7 @@ on:
     - 'master'
     paths:
      - 'helm-chart/log2rbac-operator/**'
-permissions:  # added using https://github.com/step-security/secure-workflows
+permissions:
   contents: read
 
 jobs:
@@ -17,14 +17,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Harden Runner
-      uses: step-security/harden-runner@2e205a28d0e1da00c5f53b161f4067b052c61f34
+      uses: step-security/harden-runner@2e205a28d0e1da00c5f53b161f4067b052c61f34 # tag=v1.5.0
       with:
         egress-policy: audit # TODO: change to 'egress-policy: block' after couple of runs
 
     - name: Checkout Code
       uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3.1.0
     - name: Generate docs for helm chart - helm-chart/log2rbac-operator/README.md
-      uses: docker://jnorwood/helm-docs@sha256:e438eb9f879e4bb8389ce4acd0f7e9193e3d62e877a1a3cd5abd0393dbe55fe5 # v1.11.0
+      uses: docker://jnorwood/helm-docs@sha256:e438eb9f879e4bb8389ce4acd0f7e9193e3d62e877a1a3cd5abd0393dbe55fe5 # tag=v1.11.0
       with:
         args: --template-files=_helm-docs-template.gotmpl
     - name: Create Pull Request

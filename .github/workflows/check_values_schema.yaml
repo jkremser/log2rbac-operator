@@ -8,7 +8,7 @@ on:
     paths:
       - 'helm-chart/log2rbac-operator/values.yaml'
       - 'helm-chart/log2rbac-operator/values.schema.json'
-permissions:  # added using https://github.com/step-security/secure-workflows
+permissions:
   contents: read
 
 jobs:
