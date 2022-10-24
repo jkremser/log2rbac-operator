@@ -24,7 +24,7 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3.1.0
     - name: Generate docs for helm chart - helm-chart/log2rbac-operator/README.md
-      uses: docker://jnorwood/helm-docs@sha256:e438eb9f879e4bb8389ce4acd0f7e9193e3d62e877a1a3cd5abd0393dbe55fe5 # tag=v1.11.0
+      uses: docker://jnorwood/helm-docs@sha256:66c8f4164dec860fa5c1528239c4aa826a12485305b7b224594b1a73f7e6879a
       with:
         args: --template-files=_helm-docs-template.gotmpl
     - name: Create Pull Request
