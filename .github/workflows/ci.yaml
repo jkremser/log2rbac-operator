@@ -95,12 +95,14 @@ jobs:
           (cd e2e-test/ && set -o pipefail && ../gotest ./... | tee $GITHUB_STEP_SUMMARY)
 
       - name: Login to Dockerhub
+        if: ${{ github.event_name == 'push' }}
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a # tag=v2.1.0
         with:
           username: ${{ env.DOCKER_ORG }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Push the :latest container image
+        if: ${{ github.event_name == 'push' }}
         run: |
           docker tag ${IMG} docker.io/${DOCKER_ORG}/log2rbac:latest
           docker push docker.io/${DOCKER_ORG}/log2rbac:latest
