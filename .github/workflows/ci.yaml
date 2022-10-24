@@ -55,7 +55,7 @@ jobs:
       - name: Test
         run: |
           curl -s https://gotest-release.s3.amazonaws.com/gotest_linux > gotest && chmod +x gotest
-          ./gotest ./...
+          (set -o pipefail && ./gotest ./... | tee $GITHUB_STEP_SUMMARY)
 
   e2e-on-k8s:
     name: e2e tests against kubernetes
@@ -72,12 +72,6 @@ jobs:
           curl -s https://raw.githubusercontent.com/rancher/k3d/main/install.sh | bash
           curl -s https://gotest-release.s3.amazonaws.com/gotest_linux > gotest && chmod +x gotest
           go get -u github.com/rakyll/gotest &> /dev/null
-
-      - name: Login to Dockerhub
-        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a # tag=v2.1.0
-        with:
-          username: ${{ env.DOCKER_ORG }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build container image
         run: |
@@ -98,7 +92,13 @@ jobs:
 
       - name: Test
         run: |
-          cd e2e-test/ && ../gotest ./...
+          (cd e2e-test/ && set -o pipefail && ../gotest ./... | tee $GITHUB_STEP_SUMMARY)
+
+      - name: Login to Dockerhub
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a # tag=v2.1.0
+        with:
+          username: ${{ env.DOCKER_ORG }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Push the :latest container image
         run: |
