@@ -6,7 +6,7 @@ require (
 	github.com/fatih/color v1.13.0
 	github.com/go-logr/logr v1.2.3
 	github.com/sethvargo/go-envconfig v0.8.2
-	github.com/stretchr/testify v1.8.0
+	github.com/stretchr/testify v1.8.1
 	go.opentelemetry.io/contrib/propagators v0.22.0
 	go.opentelemetry.io/contrib/propagators/aws v1.11.1
 	go.opentelemetry.io/otel v1.11.1
