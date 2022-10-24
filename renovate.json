@@ -49,6 +49,11 @@
       ],
       "groupName": "all non-major dependencies",
       "groupSlug": "all-minor-patch"
+    }, {
+      "matchDepTypes": [
+        "action"
+      ],
+      "pinDigests": true
     }
   ]
 }
