@@ -39,3 +39,7 @@ cosign.key
 # OLM
 /olm/bundle
 /olm/olm-bundle
+
+# hugo
+.hugo_build.lock
+resources/
