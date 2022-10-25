@@ -1,0 +1,41 @@
+---
+title: About log2rbac-operator
+linkTitle: About
+menu:
+  main:
+    weight: 10
+
+---
+
+
+{{< blocks/cover title="About log2rbac-operator" image_anchor="bottom" height="min" >}}
+
+<p class="lead mt-5">One paragraph description.
+</p>
+
+{{< /blocks/cover >}}
+
+{{% blocks/lead %}}
+log2rbac-operator is a cloud-native app that implements the Operator design pattern. It runs in Kubernetes and extends the Kubernetes API by introducing a new custom resource called `RbacNegotiation`.
+The operators implements the control loop for those custom resources and when requested, it starts recording the logs of an application that was specified in the `RbacNebotiation` spec. Using those logs it turns
+all the RBAC violations into exceptions and gradually builds the `Role` for your application.
+
+{{% /blocks/lead %}}
+
+<!-- 
+{{< blocks/section >}}
+<div class="col-12">
+<h1 class="text-center">This is another section</h1>
+</div>
+
+{{< /blocks/section >}} -->
+
+
+
+{{< blocks/section >}}
+
+<div class="col-12">
+<h1 class="text-center"><a href="/docs/getting-started/">Getting started</a></h1>
+</div>
+
+{{< /blocks/section >}}

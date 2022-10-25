@@ -25,3 +25,13 @@ testbin/*
 *~
 
 log2rbac-operator
+/olm/
+/gotest
+
+
+# hugo
+/public
+resources/
+node_modules/
+package-lock.json
+.hugo_build.lock
