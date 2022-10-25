@@ -5,6 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-Apache_2.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
 ![Last Commit](https://img.shields.io/github/last-commit/jkremser/log2rbac-operator)
 [![doc.crds.dev](https://img.shields.io/badge/doc-crds-yellowgreen)](https://doc.crds.dev/github.com/jkremser/log2rbac-operator)
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/6620/badge)](https://bestpractices.coreinfrastructure.org/projects/6620)
 <!-- [![Docker Pulls](https://img.shields.io/docker/pulls/jkremser/log2rbac.svg)](https://hub.docker.com/r/jkremser/log2rbac) -->
 
 # log2rbac-operator
