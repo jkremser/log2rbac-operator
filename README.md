@@ -1,138 +1,154 @@
-# Docsy Example
+[![CI](https://github.com/jkremser/log2rbac-operator/workflows/CI/badge.svg?branch=master)](https://github.com/jkremser/log2rbac-operator/actions/workflows/ci.yaml?query=workflow%3A%22CI%22+branch%3Amaster)
+[![GitHub release](https://img.shields.io/github/release/jkremser/log2rbac-operator/all.svg?style=flat-square)](https://github.com/jkremser/log2rbac-operator/releases) 
+[![Go Report Card](https://goreportcard.com/badge/github.com/jkremser/log2rbac-operator)](https://goreportcard.com/report/github.com/jkremser/log2rbac-operator)
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/log2rbac)](https://artifacthub.io/packages/search?ts_query_web=log2rbac)
+[![License: MIT](https://img.shields.io/badge/License-Apache_2.0-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
+![Last Commit](https://img.shields.io/github/last-commit/jkremser/log2rbac-operator)
+[![doc.crds.dev](https://img.shields.io/badge/doc-crds-yellowgreen)](https://doc.crds.dev/github.com/jkremser/log2rbac-operator)
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/6620/badge)](https://bestpractices.coreinfrastructure.org/projects/6620)
+<!-- [![Docker Pulls](https://img.shields.io/docker/pulls/jkremser/log2rbac.svg)](https://hub.docker.com/r/jkremser/log2rbac) -->
 
-[Docsy][] is a [Hugo theme module][] for technical documentation sites, providing easy
-site navigation, structure, and more. This **Docsy Example Project** uses the Docsy
-theme component as a hugo module and provides a skeleton documentation structure for you to use.
-You can clone/copy this project and edit it with your own content, or use it as an example.
+# log2rbac-operator
+Kubernetes operator that helps you to set up the RBAC rules for your application. If requested, it scans the application's log files
+for authorization errors and adds them as exceptions/rights to the associated `Role`. It is like having a `sudo` command for your service accounts. However, with great power comes great responsibility. The goal of the tool is to find the minimum set of rights that is needed for your workload to run instead of using the cluster admin for everything.
 
-In this project, the Docsy theme component is pulled in as a Hugo module, together with other module dependencies:
+User has to allow this process by creating a `RbacNegotiation` custom resource where they need to specify the app[*](#clarify) and `Role`.
+Role can be either existing one or operator can create a new one for you and bind it to the service account that's configured with the deployment. Again if the service account is not there, it will be created by the operator.
 
-```bash
-$ hugo mod graph
-hugo: collected modules in 566 ms
-hugo: collected modules in 578 ms
-github.com/google/docsy-example github.com/google/docsy@v0.2.0
-github.com/google/docsy-example github.com/google/docsy/dependencies@v0.2.0
-github.com/google/docsy/dependencies@v0.2.0 github.com/twbs/bootstrap@v4.6.1+incompatible
-github.com/google/docsy/dependencies@v0.2.0 github.com/FortAwesome/Font-Awesome@v0.0.0-20210804190922-7d3d774145ac
-```
+<a name="clarify"></a>* App can be one of the following:
+- `Deployment`
+- `StatefulSet`
+- `DaemonSet`
+- `Service`
+- `ReplicaSet`
+- or key-value pair specifying the pod selector
 
-You can find detailed theme instructions in the [Docsy user guide][].
+By creating `RbacNegotiation` we start the "recording" regime for our workload in which the operator will be building this allow list of verbs, resources (rbac entries) for the given role.
 
-This Docsy Example Project is hosted on [Netlify][] at [example.docsy.dev][].
-You can view deploy logs from the [deploy section of the project's Netlify
-dashboard][deploys], or this [alternate dashboard][].
+[![Watch the full asciicast](./demo.gif)](https://asciinema.org/a/504672)
+([pauseable demo](https://asciinema.org/a/504672))
 
-This is not an officially supported Google product. This project is currently maintained.
+This project is conceptually very similar to [`audit2rbac`](https://github.com/liggitt/audit2rbac). The main distinction here is that `log2rbac` is based on the 
+controller pattern and on the output from the workloads, while `audit2rbac` uses the k8s' audit log and it's a "one-pass" CLI tool.
 
-## Using the Docsy Example Project as a template
-
-A simple way to get started is to use this project as a template, which gives you a site project that is set up and ready to use. To do this: 
-
-1. Click **Use this template**.
-
-2. Select a name for your new project and click **Create repository from template**.
-
-3. Make your own local working copy of your new repo using git clone, replacing https://github.com/me/example.git with your repo’s web URL:
+## Quick Start
 
 ```bash
-git clone --depth 1 https://github.com/me/example.git
+# clone repo and
+make deploy
 ```
 
-You can now edit your own versions of the site’s source files.
-
-If you want to do SCSS edits and want to publish these, you need to install `PostCSS`
+alternatively install it using [all-in-one yaml](deploy/all-in-one.yaml)
 
 ```bash
-npm install
+kubectl apply -f http://bit.do/log2rbac
 ```
 
-## Running the website locally
+or helm:
 
-Building and running the site locally requires a recent `extended` version of [Hugo](https://gohugo.io).
-You can find out more about how to install Hugo for your environment in our
-[Getting started](https://www.docsy.dev/docs/getting-started/#prerequisites-and-installation) guide.
-
-Once you've made your working copy of the site repo, from the repo root folder, run:
-
-```
-hugo server
+```bash
+helm repo add log2rbac https://jkremser.github.io/log2rbac-operator
+helm repo update
+helm -n log2rbac upgrade -i log2rbac log2rbac/log2rbac-operator --wait --create-namespace
 ```
 
-## Running a container locally
+Now when the operator was installed, let's deploy something that needs the special RBAC. Prometheus Operator is a good example.
 
-You can run docsy-example inside a [Docker](https://docs.docker.com/)
-container, the container runs with a volume bound to the `docsy-example`
-folder. This approach doesn't require you to install any dependencies other
-than [Docker Desktop](https://www.docker.com/products/docker-desktop) on
-Windows and Mac, and [Docker Compose](https://docs.docker.com/compose/install/)
-on Linux.
-
-1. Build the docker image 
-
-   ```bash
-   docker-compose build
-   ```
-
-1. Run the built image
-
-   ```bash
-   docker-compose up
-   ```
-
-   > NOTE: You can run both commands at once with `docker-compose up --build`.
-
-1. Verify that the service is working. 
-
-   Open your web browser and type `http://localhost:1313` in your navigation bar,
-   This opens a local instance of the docsy-example homepage. You can now make
-   changes to the docsy example and those changes will immediately show up in your
-   browser after you save.
-
-### Cleanup
-
-To stop Docker Compose, on your terminal window, press **Ctrl + C**. 
-
-To remove the produced images run:
-
-```console
-docker-compose rm
-```
-For more information see the [Docker Compose
-documentation](https://docs.docker.com/compose/gettingstarted/).
-
-## Troubleshooting
-
-As you run the website locally, you may run into the following error:
-
-```
-➜ hugo server
-
-INFO 2021/01/21 21:07:55 Using config file: 
-Building sites … INFO 2021/01/21 21:07:55 syncing static files to /
-Built in 288 ms
-Error: Error building site: TOCSS: failed to transform "scss/main.scss" (text/x-scss): resource "scss/scss/main.scss_9fadf33d895a46083cdd64396b57ef68" not found in file cache
+```bash
+kubectl create ns monitoring
+kubectl apply -n monitoring -f https://github.com/prometheus-operator/kube-prometheus/raw/v0.10.0/manifests/prometheusOperator-deployment.yaml
 ```
 
-This error occurs if you have not installed the extended version of Hugo.
-See this [section](https://www.docsy.dev/docs/get-started/docsy-as-module/installation-prerequisites/#install-hugo) of the user guide for instructions on how to install Hugo.
+This deployment will fail to start because of the missing rights to do its stuff. Let's request the RBAC negotiation process.
 
-Or you may encounter the following error:
-
+```bash
+# create RbacNegotiation for Prometheus operator
+cat <<CustomResource | kubectl apply -f -
+apiVersion: kremser.dev/v1
+kind: RbacNegotiation
+metadata:
+  name: for-prom
+spec:
+  for:
+    namespace: monitoring
+    kind: Deployment
+    name: prometheus-operator
+  role:
+    name: foo
+    isClusterRole: true
+    createIfNotExist: true
+CustomResource
 ```
-➜ hugo server
 
-Error: failed to download modules: binary with name "go" not found
+```bash
+# After some time, the Prometheus Operator should start and we should see.
+
+k describe clusterrole foo
+Name:         foo
+Labels:       <none>
+Annotations:  app.kubernetes.io/created-by=log2rbac
+PolicyRule:
+  Resources                                  Non-Resource URLs  Resource Names  Verbs
+  ---------                                  -----------------  --------------  -----
+  configmaps                                 []                 []              [list watch]
+  namespaces                                 []                 []              [list watch]
+  secrets                                    []                 []              [list watch]
+  statefulsets.apps                          []                 []              [list watch]
+  alertmanagerconfigs.monitoring.coreos.com  []                 []              [list]
+  alertmanagers.monitoring.coreos.com        []                 []              [list]
+  ...
 ```
 
-This error occurs if you have not installed the `go` programming language on your system.
-See this [section](https://www.docsy.dev/docs/get-started/docsy-as-module/installation-prerequisites/#install-go-language) of the user guide for instructions on how to install `go`.
+Note: This set of rights was necessary only for the Prometheus operator to start. Once we start interacting with the subject of our RBAC negotiation process, the new code paths will be executed and possibly new rights will be requested. It might be a good idea to run e2e tests or at least have some script that calls the Prometheus operator's functionality (CRUDing all its CRDs). Last but not least, once we are happy with the resulting role and the rights it got, we should delete the RBAC negotiation custom resource to reduce the attack surface on our cluster.
 
+You may want to capture the role in yaml format and store it as part of your infrastructure code in git:
 
-[alternate dashboard]: https://app.netlify.com/sites/goldydocs/deploys
-[deploys]: https://app.netlify.com/sites/docsy-example/deploys
-[Docsy user guide]: https://docsy.dev/docs
-[Docsy]: https://github.com/google/docsy
-[example.docsy.dev]: https://example.docsy.dev
-[Hugo theme module]: https://gohugo.io/hugo-modules/use-modules/#use-a-module-for-a-theme
-[Netlify]: https://netlify.com
+```bash
+k get clusterrole foo -o yaml | k neat
+```
+
+## Kubectl Plugin
+
+Installation:
+```bash
+kubectl krew install log2rbac
+```
+
+It can help with creating those `RbacNegotiation` custom resources by interactive TUI api.
+
+It's located in [this repo](./kubectl-plugin)
+
+## Observability
+
+Operator's code has been instrumented by ~OpenTracing~ OpenTelemetry calls so that one can export the spans to Jaeger or Zipkin and
+connect the dots. There is an example deployment using open telemetry collector running as a side-car container that exports the traces
+to Jaeger that runs in its own deployment. To deploy this scenario, issue:
+
+```bash
+make deploy-otel
+```
+
+To check the Jaeger web UI for `log2rbac` traces, the easiest way is to
+
+```bash
+kubectl port-forward svc/jaeger-collector 16686
+open http://localhost:16686
+```
+
+![Jaeger + log2rbac screenshot](/docs/log2rbac-jaeger.png)
+
+## Configuration
+
+Following options are available as env variables for the operator:
+
+| Variable name                               | Description                                           | default value | 
+|---------------------------------------------|-------------------------------------------------------|---------------|
+| `COLORS`                                    | whether the colorful output in logs should be used    | `true`        |
+| `NO_BANNER`                                 | whether no ascii art should be printed during start   | `false`       |
+| `SYNC_INTERVAL_AFTER_NO_RBAC_ENTRY_MINUTES` | if no rbac related entry was found in logs, how long to wait for the next check   | `5`           |
+| `SYNC_INTERVAL_AFTER_NO_LOGS_SECONDS`       | if it was not possible to get the logs, how long to wait for the next check       | `30`          |
+| `SYNC_INTERVAL_AFTER_POD_RESTART_SECONDS`   | how long to wait after rbac entry was added and pod was restarted by the operator | `20`          |
+| `SHOULD_RESTART_APP_PODS`                   | whether the operator should be restarting the pods after modifying the role       | `true`        |
+| `TRACING_ENABLED`                           | if the application should be sending the traces to OTLP collector          | `false`              |
+| `OTEL_EXPORTER_OTLP_ENDPOINT`               | `host:port` where the spans (traces) should be sent                        | `localhost:4318`     |
+| `TRACING_SAMPLING_RATIO`                    | `float64` representing the ratio how often the span should be kept/dropped | `AlwaysSample ~ 1.0` |

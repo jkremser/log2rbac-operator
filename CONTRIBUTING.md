@@ -1,28 +1,43 @@
-# How to Contribute
+## Local Setup
+Assuming you have configured the connection to a Kubernetes cluster in your `$KUBECONFIG` or `~/.kube/config` all you need to do to run the latest
+version of the project is:
 
-We'd love to accept your patches and contributions to this project. There are
-just a few small guidelines you need to follow.
+```bash
+make run
+```
 
-## Contributor License Agreement
+### Debugging
+In your favorite IDE just run the main.go in the debug mode, all the environment variables should have the default fallback values so no further configuration is needed.
 
-Contributions to this project must be accompanied by a Contributor License
-Agreement. You (or your employer) retain the copyright to your contribution;
-this simply gives us permission to use and redistribute your contributions as
-part of the project. Head over to <https://cla.developers.google.com/> to see
-your current agreements on file or to sign a new one.
 
-You generally only need to submit a CLA once, so if you've already submitted one
-(even if it was for a different project), you probably don't need to do it
-again.
+## Run e2e on the localhost
 
-## Code reviews
+We are assuming the k3s & k3d combo here, but any Kubernetes should do.
 
-All submissions, including submissions by project members, require review. We
-use GitHub pull requests for this purpose. Consult
-[GitHub Help](https://help.github.com/articles/about-pull-requests/) for more
-information on using pull requests.
+```bash
+# this image name will be build and deployed in the cluster (arbitrary)
+export IMG=candidate
+```
 
-## Community Guidelines
+```bash
+# build the container image
+make container-img
+```
 
-This project follows
-[Google's Open Source Community Guidelines](https://opensource.google.com/conduct/).
+```bash
+# create cluster and import the image (if having multiple clusters, you may want to use -c clusterName)
+k3d cluster create --no-lb --k3s-arg "--disable=traefik,servicelb,metrics-server,local-storage@server:*"
+k3d image import ${IMG}:latest
+```
+
+```bash
+# deploy the CRD and operator
+make install deploy
+kubectl wait deploy/log2rbac -n log2rbac --for condition=available --timeout=2m
+```
+
+
+```bash
+# run the e2e tests
+cd e2e-test/ && go mod download && gotest ./...
+```
