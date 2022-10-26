@@ -31,7 +31,7 @@ jobs:
           echo "::set-output name=tag::${tag}"
       - name: Push Tag
         if: startsWith(github.event.head_commit.message, 'RELEASE:') || startsWith(github.event.commits[0].message, 'RELEASE:')
-        uses: mathieudutour/github-tag-action@d745f2e74aaf1ee82e747b181f7a0967978abee0 # tag=v6.0
+        uses: mathieudutour/github-tag-action@fcfbdceb3093f6d85a3b194740f8c6cec632f4e2 # tag=v6.1
         with:
           github_token: ${{ secrets.RELEASER_TOKEN }}
           create_annotated_tag: true
