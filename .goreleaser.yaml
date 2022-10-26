@@ -147,10 +147,20 @@ docker_signs:
 changelog:
   sort: asc
   use: github
-  filters:
+  groups: # not supported for github-native changelog
+  - title: 'Security fixes'
+    regexp: "^.*CVE.*$"
+    order: 0
+  - title: Dependencies
+    regexp: '^Update .+ to\w+ .*$'
+    order: 1
+  - title: Others
+    order: 999
+  filters: # not supported for github-native changelog
     exclude:
-      - '^docs:'
-      - '^test:'
+      - '^[create-pull-request]'
+      - '^RELEASE:'
+      - '^Revert "RELEASE:'
       - Merge pull request
       - Merge branch
 
