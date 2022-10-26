@@ -20,8 +20,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
+// Important: Run "make" to regenerate code after modifying this file
+// NOTE: json tags are required. Any new fields you add must have json tags for the fields to be serialized.
 
 // ForSpec identifies the application of which the logs will be used for RBAC negotiation
 // +k8s:openapi-gen=true
@@ -46,11 +46,11 @@ type RoleSpec struct {
 // RbacNegotiationSpec defines the desired state of RbacNegotiation
 // +k8s:openapi-gen=true
 type RbacNegotiationSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
-	For  ForSpec  `json:"for"`
-	Role RoleSpec `json:"role,omitempty"`
+	// Paused can be used to prevent controllers from processing the RbacNegotiation and all its associated objects.
+	// +optional
+	Paused bool     `json:"paused,omitempty"`
+	For    ForSpec  `json:"for"`
+	Role   RoleSpec `json:"role,omitempty"`
 	// +optional This needs to be provided if .spec.for.kind == service
 	// this can override the real service account that's specified in the deployment,rs,ds or ss
 	ServiceAccountName string `json:"serviceAccountName,omitempty"`
