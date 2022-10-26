@@ -15,7 +15,7 @@ deploy:
 
 image:
   # -- container image repo (can be prepended by image registry)
-  repository: jkremser/log2rbac
+  repository: docker.io/jkremser/log2rbac
 
   # -- translates to pod's `spec.imagePullPolicy`
   pullPolicy: Always
