@@ -37,7 +37,7 @@ main() {
 }
 
 generate() {
-    echo "    containerImage: jkremser/log2rbac:v${_VERSION}" >> ${DIR}/annotations.yaml.tmpl
+    echo "    containerImage: docker.io/jkremser/log2rbac:v${_VERSION}" >> ${DIR}/annotations.yaml.tmpl
     helm -n placeholder template ${DIR}/../helm-chart/log2rbac-operator \
         --set image.tag=v${_VERSION} | ${OLM_BINARY} \
             --chart-file-path=${DIR}/../helm-chart/log2rbac-operator/Chart.yaml \
