@@ -65,6 +65,10 @@ func IsNotOlderThan(res *kremserv1.RbacNegotiation, seconds float64) bool {
 	return duration.Seconds() < seconds
 }
 
+func IsPaused(r *kremserv1.RbacNegotiation) bool {
+	return r.Spec.Paused
+}
+
 func updateTimeAndSave(c client.Client, ctx context.Context, res *kremserv1.RbacNegotiation) {
 	res.Status.LastCheck = metav1.Now()
 	if res.Status.EntriesAdded == 0 {

@@ -65,6 +65,12 @@ func (r *RbacNegotiationReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	if IsNotOlderThan(&rbacNeg, r.Config.Controller.IgnoreSameEventsWithinSeconds) {
 		return ctrl.Result{}, nil
 	}
+	if IsPaused(&rbacNeg) {
+		log.Log.V(7).Info(fmt.Sprintf("Skipping rbac negotiation for '%s/%s', because it's in a paused state",
+			req.NamespacedName.Namespace, req.NamespacedName.Name))
+		return ctrl.Result{}, nil
+	}
+
 	if rbacNeg.Spec.For.Namespace == "" {
 		rbacNeg.Spec.For.Namespace = req.Namespace
 	}
