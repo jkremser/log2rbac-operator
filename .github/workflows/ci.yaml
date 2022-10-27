@@ -54,7 +54,7 @@ jobs:
 
       - name: gokart
         run: |
-          go install github.com/praetorian-inc/gokart@v0.5.1
+          go install github.com/praetorian-inc/gokart@3d38a9ae72f7d67d5c13f83ec5669630868e409e # tag=v0.5.1
           gokart scan --globalsTainted
 
   build-and-test:
@@ -87,8 +87,9 @@ jobs:
 
       - name: Test
         run: |
-          curl -s https://gotest-release.s3.amazonaws.com/gotest_linux > gotest && chmod +x gotest
-          (set -o pipefail && ./gotest ./... | tee $GITHUB_STEP_SUMMARY)
+          # curl -s https://gotest-release.s3.amazonaws.com/gotest_linux > gotest && chmod +x gotest
+          # (set -o pipefail && ./gotest ./... | tee $GITHUB_STEP_SUMMARY)
+          (set -o pipefail && go test ./... | tee $GITHUB_STEP_SUMMARY)
 
   e2e-on-k8s:
     name: e2e tests against kubernetes
@@ -125,8 +126,7 @@ jobs:
       - name: Install stuff
         run: |
           curl -s https://raw.githubusercontent.com/rancher/k3d/main/install.sh | bash
-          curl -s https://gotest-release.s3.amazonaws.com/gotest_linux > gotest && chmod +x gotest
-          go get -u github.com/rakyll/gotest &> /dev/null
+          # curl -s https://gotest-release.s3.amazonaws.com/gotest_linux > gotest && chmod +x gotest
 
       - name: Build container image
         run: |
@@ -147,7 +147,8 @@ jobs:
 
       - name: Test
         run: |
-          (cd e2e-test/ && set -o pipefail && ../gotest ./... | tee $GITHUB_STEP_SUMMARY)
+          # (cd e2e-test/ && set -o pipefail && ../gotest ./... | tee $GITHUB_STEP_SUMMARY)
+          (cd e2e-test/ && set -o pipefail && go test ./... | tee $GITHUB_STEP_SUMMARY)
 
       - name: Login to Dockerhub
         if: ${{ github.event_name == 'push' }}
