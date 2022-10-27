@@ -101,7 +101,7 @@ PolicyRule:
 
 Note: This set of rights was necessary only for the Prometheus operator to start. Once we start interacting with the subject of our RBAC negotiation process, the new code paths will be executed and possibly new rights will be requested. It might be a good idea to run e2e tests or at least have some script that calls the Prometheus operator's functionality (CRUDing all its CRDs). Last but not least, once we are happy with the resulting role and the rights it got, we should delete the RBAC negotiation custom resource to reduce the attack surface on our cluster.
 
-You may want to capture the role in yaml format and store it as part of your infrastructure code in git:
+You may want to capture the role in yaml format and store it as part of your infrastructure code in git (using [neat](https://github.com/itaysk/kubectl-neat)):
 
 ```bash
 k get clusterrole foo -o yaml | k neat
