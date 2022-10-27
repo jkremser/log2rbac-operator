@@ -37,6 +37,8 @@ jobs:
             objects.githubusercontent.com:443
             proxy.golang.org:443
             raw.githubusercontent.com:443
+            storage.googleapis.com:443
+            sum.golang.org:443
 
       - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3.1.0
       - uses: actions/setup-go@c4a742cab115ed795e34d4513e2cf7d472deb55f # tag=v3
@@ -47,6 +49,7 @@ jobs:
       - name: Lint using golangci-lint
         uses: golangci/golangci-lint-action@07db5389c99593f11ad7b44463c2d4233066a9b1 # tag=v3.3.0
         with:
+          version: v1.50.1
           args: --timeout=4m --verbose
 
       - name: gokart
