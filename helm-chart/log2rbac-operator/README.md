@@ -46,7 +46,7 @@ helm upgrade -i log2rbac log2rbac/log2rbac-operator
 | deploy.rbac | bool | `true` | whether the rbac resources should be also deployed (ServiceAccount, ClusterRole, ClusterRoleBinding) |
 | deploy.service | bool | `true` | whether the service for metrics and open-telemetry should be deployed (Service) |
 | image.pullPolicy | string | `"Always"` | translates to pod's `spec.imagePullPolicy` |
-| image.repository | string | `"jkremser/log2rbac"` | container image repo (can be prepended by image registry) |
+| image.repository | string | `"docker.io/jkremser/log2rbac"` | container image repo (can be prepended by image registry) |
 | image.tag | string | `""` | Overrides the image tag whose default is the chart appVersion. |
 | imagePullSecrets | list | `[]` |  |
 | metrics.enabled | bool | `true` | should the metrics be enabled (additional arg for log2rbac binary) |
