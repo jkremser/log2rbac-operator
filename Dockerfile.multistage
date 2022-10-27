@@ -2,7 +2,8 @@
 ARG GOLANG_VERSION=1.19.2
 
 # Build the log2rbac binary
-FROM docker.io/golang:${GOLANG_VERSION} as builder
+# docker.io/golang:1.19.2
+FROM docker.io/golang@sha256:41e70b653471cb7745d0fe665b12228fda9654b1e0e0a05ecc9623e3c6e9e229 as builder
 ARG GIT_SHA=unknown
 ARG VERSION=unknown
 
@@ -26,7 +27,8 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags "-w -s -X main.gitSh
 
 # Use distroless as minimal base image to package the log2rbac (manager) binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
-FROM gcr.io/distroless/static:nonroot
+# gcr.io/distroless/static:static
+FROM gcr.io/distroless/static@sha256:d8afc7d6973f357162e2283551cf3347b2bb847a03d24510ee837f289505f8e3
 ARG GOLANG_VERSION
 ARG GIT_SHA
 ARG VERSION

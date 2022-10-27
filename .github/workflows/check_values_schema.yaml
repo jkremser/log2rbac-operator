@@ -29,7 +29,11 @@ jobs:
           SCHEMA_FILE=helm-chart/log2rbac-operator/values.schema.json
 
           # check if the values.json is covered by the schema
-          pip3 install json-spec
+          cat <<EOF >> requirements.txt
+          json-spec==0.10.1 --hash=sha256:c30d7c8bee07bd3fdf620b8902398d0ab58c735adedfeff07e6a7fc358f8cbeb
+          six==1.16.0       --hash=sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254
+          EOF
+          pip3 install --require-hashes -I -r requirements.txt
           yq -o=json eval ${VALUES_FILE} > /tmp/values.json
           json validate --schema-file=${SCHEMA_FILE} --document-file=/tmp/values.json
           echo "PASSED: values.yaml and values.schema.json both appear to have been updated and the document is valid against the schema"
