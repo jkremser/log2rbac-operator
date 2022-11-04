@@ -1,0 +1,28 @@
+.PHONY: image-imports
+image-imports:
+	for i in quay.io/prometheus-operator/prometheus-operator:v0.53.1 quay.io/brancz/kube-rbac-proxy:v0.11.0 rancher/mirrored-coredns-coredns:1.9.1 jkremser/log2rbac:latest ; do \
+        echo -e "\n\nimporting $$i" ;\
+	    k3d image import $$i ;\
+	done
+
+.PHONY: reset
+reset:
+	-kubectl delete rn for-prometheus-operator
+	-kubectl delete clusterrole new-prometheus-operator-role
+	-kubectl delete clusterrolebinding new-prometheus-operator-role-binding
+
+.PHONY: full-reset
+full-reset: reset
+	-kubectl delete ns log2rbac
+	-kubectl delete ns monitoring
+
+.PHONY: speedup
+speedup:
+	kubectl set env deploy/log2rbac -n log2rbac SYNC_INTERVAL_AFTER_POD_RESTART_SECONDS=2
+	sleep 5
+	kubectl log2rbac -n monitoring deployment prometheus-operator
+
+.PHONY: prepare
+prepare:
+	-kubectl create ns monitoring
+	-kubectl create serviceaccount prometheus-operator -n monitoring
