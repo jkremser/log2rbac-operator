@@ -11,7 +11,7 @@ deploy:
   # -- whether the jaeger should be deployed with the operator (use together with `tracing.enabled = true`)
   jaeger: false
   # -- whether the custom resource definitions should be also deployed into the cluster
-  crds: true
+  crds: something
 
 image:
   # -- container image repo (can be prepended by image registry)
