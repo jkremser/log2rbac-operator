@@ -4,12 +4,12 @@ go 1.19
 
 require (
 	github.com/franela/goblin v0.0.0-20211003143422-0a4f594942bf
-	github.com/gruntwork-io/terratest v0.40.24
+	github.com/gruntwork-io/terratest v0.41.0
 	github.com/jkremser/log2rbac-operator v0.0.5
-	k8s.io/api v0.25.3
-	k8s.io/apiextensions-apiserver v0.25.3
-	k8s.io/apimachinery v0.25.3
-	k8s.io/client-go v0.25.3
+	k8s.io/api v0.25.4
+	k8s.io/apiextensions-apiserver v0.25.4
+	k8s.io/apimachinery v0.25.4
+	k8s.io/client-go v0.25.4
 )
 
 require (
@@ -82,7 +82,7 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/component-base v0.25.3 // indirect
+	k8s.io/component-base v0.25.4 // indirect
 	k8s.io/klog/v2 v2.70.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20220803162953-67bda5d908f1 // indirect
 	k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed // indirect
