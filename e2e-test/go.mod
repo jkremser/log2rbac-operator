@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/franela/goblin v0.0.0-20211003143422-0a4f594942bf
-	github.com/gruntwork-io/terratest v0.41.2
+	github.com/gruntwork-io/terratest v0.41.3
 	github.com/jkremser/log2rbac-operator v0.0.5
 	k8s.io/api v0.25.4
 	k8s.io/apiextensions-apiserver v0.25.4
