@@ -39,8 +39,8 @@ spec:
         {{- end }}
         env:
         {{- with .Values.operator }}
-        - name: COLORS
-          value: {{ .colors | quote }}
+        - name: NO_COLOR
+          value: {{ .noColor | quote }}
         - name: NO_BANNER
           value: {{ .noBanner | quote }}
         - name: SHOULD_RESTART_APP_PODS

@@ -10,7 +10,7 @@ type Config struct {
 
 // LogConfig contains log related configuration
 type LogConfig struct {
-	Colors   bool `env:"COLORS,default=true"`
+	NoColor  bool `env:"NO_COLOR,default=false"`
 	NoBanner bool `env:"NO_BANNER,default=false"`
 }
 

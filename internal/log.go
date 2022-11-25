@@ -18,7 +18,7 @@ func SetupLog(cfg *LogConfig) {
 	zap.UseDevMode(true)(&opts)
 	zap.ConsoleEncoder(func(c *zapcore.EncoderConfig) {
 		c.EncodeTime = zapcore.TimeEncoderOfLayout("01-02 15:04:05")
-		if cfg.Colors {
+		if !cfg.NoColor {
 			c.EncodeLevel = zapcore.CapitalColorLevelEncoder
 		}
 	})(&opts)
@@ -37,7 +37,7 @@ func PrintBanner(cfg *LogConfig) {
 		return
 	}
 	c1, c2, c3 := color.FgCyan, color.FgHiWhite, color.FgBlue
-	if !cfg.Colors {
+	if cfg.NoColor {
 		c1, c2, c3 = color.Reset, color.Reset, color.Reset
 	}
 	pad := "     " + "     " + "     " + "     " + "     "
