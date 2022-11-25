@@ -16,7 +16,7 @@ RUN go mod download
 COPY main.go main.go
 COPY api/ api/
 COPY controllers/ controllers/
-COPY pkg/ pkg/
+COPY internal/ internal/
 
 ENV GOLANG_VERSION=${GOLANG_VERSION} \
     GIT_SHA=${GIT_SHA} \

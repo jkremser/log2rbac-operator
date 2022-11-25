@@ -20,7 +20,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/jkremser/log2rbac-operator/pkg/internal"
+	"github.com/jkremser/log2rbac-operator/internal"
 	"io"
 	apps "k8s.io/api/apps/v1"
 	"k8s.io/client-go/tools/record"
