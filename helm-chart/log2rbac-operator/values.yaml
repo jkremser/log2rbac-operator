@@ -62,8 +62,8 @@ tracing:
 
 # operator specific settings
 operator:
-  # -- should the logs be colorcul (env var `COLORS`)
-  colors: true
+  # -- should the logs be colorful (env var `NO_COLOR`)
+  noColor: false
   # -- should the ascii logo be printed in the logs (env var `NO_BANNER`)
   noBanner: false
 

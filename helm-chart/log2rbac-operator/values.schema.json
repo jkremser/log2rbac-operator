@@ -148,7 +148,7 @@
             "type": "object",
             "additionalProperties": false,
             "properties": {
-                "colors": {
+                "noColor": {
                     "type": "boolean"
                 },
                 "noBanner": {
