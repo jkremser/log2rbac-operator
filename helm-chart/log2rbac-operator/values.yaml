@@ -51,7 +51,7 @@ tracing:
     # -- OpenTelemetry collector into which the log2rbac operator sends the spans. It can be further configured to send its data
     # to somewhere else using exporters (Jaeger for instance)
     repository: otel/opentelemetry-collector
-    tag: 0.64.1
+    tag: 0.66.0
     pullPolicy: Always
   
   jaegerImage:
