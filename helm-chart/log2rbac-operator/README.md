@@ -54,8 +54,8 @@ helm upgrade -i log2rbac log2rbac/log2rbac-operator
 | metrics.port | int | `8080` | on which port the metrics server should listen |
 | metrics.serviceType | string | `"NodePort"` | typeof the service for metrics (ClusterIP, NodePort, LoadBalancer, ExternalName). Consult https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types |
 | nodeSelector | object | `{}` | https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/ |
-| operator.colors | bool | `true` | should the logs be colorcul (env var `COLORS`) |
 | operator.noBanner | bool | `false` | should the ascii logo be printed in the logs (env var `NO_BANNER`) |
+| operator.noColor | bool | `false` | should the logs be colorful (env var `NO_COLOR`) |
 | operator.restartPods | bool | `true` | whether the operator should be restarting the pods after modifying the role (env var `SHOULD_RESTART_APP_PODS`) if not set defaults to `true` |
 | operator.syncIntervals.afterNoLogs | int | `30` | if it was not possible to get the logs, how long to wait for the next check (env var `SYNC_INTERVAL_AFTER_NO_LOGS_SECONDS`) value represents the number of seconds |
 | operator.syncIntervals.afterNoRbacEntry | int | `5` | if no rbac related entry was found in logs, how long to wait for the next check (env var `SYNC_INTERVAL_AFTER_NO_RBAC_ENTRY_MINUTES`) value represents the number of minutes |
@@ -79,7 +79,7 @@ helm upgrade -i log2rbac log2rbac/log2rbac-operator
 | tracing.samplingRatio | string | `nil` | float representing the ratio of how often the span should be kept/dropped (env var `TRACING_SAMPLING_RATIO`) if not specified, the AlwaysSample will be used which is the same as 1.0. `0.1` would mean that 10% of samples will be kept |
 | tracing.sidecarImage.pullPolicy | string | `"Always"` |  |
 | tracing.sidecarImage.repository | string | `"otel/opentelemetry-collector"` | OpenTelemetry collector into which the log2rbac operator sends the spans. It can be further configured to send its data to somewhere else using exporters (Jaeger for instance) |
-| tracing.sidecarImage.tag | string | `"0.64.1"` |  |
+| tracing.sidecarImage.tag | string | `"0.66.0"` |  |
 
 ## Requirements
 
