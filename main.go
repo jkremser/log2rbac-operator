@@ -26,8 +26,7 @@ import (
 
 	kremserv1 "github.com/jkremser/log2rbac-operator/api/v1"
 	"github.com/jkremser/log2rbac-operator/controllers"
-	"github.com/jkremser/log2rbac-operator/internal"
-	"github.com/sethvargo/go-envconfig"
+	"github.com/jkremser/log2rbac-operator/pkg/internal"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
