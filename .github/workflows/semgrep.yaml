@@ -29,7 +29,7 @@ jobs:
 
       - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3.1.0
 
-      - uses: returntocorp/semgrep-action@cb0ca88f5031414c13293f530c7e6793d824db51 # v1
+      - uses: returntocorp/semgrep-action@1f574d3af7813fdd9bd7754b9a2c88a68e109ea7 # v1
         with:
           config: >-
             p/security-audit
