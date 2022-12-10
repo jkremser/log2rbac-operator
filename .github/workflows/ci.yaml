@@ -54,6 +54,7 @@ jobs:
         with:
           version: v1.50.1
           args: --timeout=4m --verbose
+          skip-cache: true
 
       - name: gokart
         run: |
