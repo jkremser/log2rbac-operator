@@ -329,7 +329,8 @@ func GobTestReconciliationForPrometheusService(c *TestContext) {
 				newRole = role
 				return
 			}
-			checkRole(5)
+			checkRole(7)
+			g.Assert(newRole).IsNotNil()
 		})
 		g.It("but the cluster role is empty", func() {
 			rulesNumber = len(newRole.Rules)
