@@ -3,7 +3,7 @@ ARG GOLANG_VERSION=1.19.2
 
 # Build the log2rbac binary
 # docker.io/golang:1.19.2
-FROM docker.io/golang@sha256:bb9811fad43a7d6fd2173248d8331b2dcf5ac9af20976b1937ecd214c5b8c383 as builder
+FROM docker.io/golang@sha256:2edf6aab2d57644f3fe7407132a0d1770846867465a39c2083770cf62734b05d as builder
 ARG GIT_SHA=unknown
 ARG VERSION=unknown
 
