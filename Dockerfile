@@ -1,5 +1,5 @@
 # gcr.io/distroless/static:static
-FROM gcr.io/distroless/static@sha256:11364b4198394878b7689ad61c5ea2aae2cd2ed127c09fc7b68ca8ed63219030
+FROM gcr.io/distroless/static@sha256:7198a357ff3a8ef750b041324873960cf2153c11cc50abb9d8d5f8bb089f6b4e
 
 WORKDIR /
 COPY log2rbac .
