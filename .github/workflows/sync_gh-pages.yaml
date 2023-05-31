@@ -28,7 +28,7 @@ jobs:
           git checkout gh-pages
           git checkout ${GITHUB_REF##*/} {README,CONTRIBUTING,CHANGELOG}.md
       - name: Push to gh-pages
-        uses: EndBug/add-and-commit@61a88be553afe4206585b31aa72387c64295d08b # tag=v9
+        uses: EndBug/add-and-commit@1bad3abcf0d6ec49a5857d124b0bfb52dc7bb081 # v9
         with:
           author_name: ${{ github.actor }}
           author_email: ${{ github.actor }}@users.noreply.github.com
