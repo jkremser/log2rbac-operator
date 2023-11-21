@@ -2,7 +2,7 @@ name: Helm docs
 on:
   push:
     branches:
-    - 'master'
+    - 'main'
     paths:
      - 'helm-chart/log2rbac-operator/**'
 permissions:
@@ -33,7 +33,7 @@ jobs:
         title: "Update Helm Docs"
         branch: ci-helm-doc
         delete-branch: true
-        base: master
+        base: main
         signoff: true
         token: ${{ secrets.GITHUB_TOKEN }}
 

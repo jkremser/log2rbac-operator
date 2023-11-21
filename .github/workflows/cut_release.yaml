@@ -4,7 +4,7 @@ name: Release tagging
 on:
   push:
     branches:
-      - 'master'
+      - 'main'
     paths:
       - 'kubectl-plugin/VERSION'
 

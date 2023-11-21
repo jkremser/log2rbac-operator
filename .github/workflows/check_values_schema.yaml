@@ -4,7 +4,7 @@ name: 'Check if values schema file has been updated'
 on:
   pull_request:
     branches:
-      - master
+      - main
     paths:
       - 'helm-chart/log2rbac-operator/values.yaml'
       - 'helm-chart/log2rbac-operator/values.schema.json'

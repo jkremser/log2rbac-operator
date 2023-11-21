@@ -4,7 +4,7 @@ metadata:
   name: log2rbac
 spec:
   version: "v0.0.5"
-  homepage: https://github.com/jkremser/log2rbac-operator/tree/master/kubectl-plugin
+  homepage: https://github.com/jkremser/log2rbac-operator/tree/main/kubectl-plugin
   shortDescription: "Fine-tune your RBAC using log2rbac operator"
   description: |
     Simple TUI based kubectl plugin to interface with the log2rbac operator.

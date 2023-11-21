@@ -26,4 +26,4 @@ jobs:
         with:
           workflow: OLM bundle and PR
           token: ${{ secrets.RELEASER_TOKEN }}
-          inputs: '{ "bundleVersion": "master" }'
+          inputs: '{ "bundleVersion": "main" }'

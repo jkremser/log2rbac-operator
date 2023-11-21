@@ -33,7 +33,7 @@ jobs:
           title: "Update Kubectl Plugin - ${{ github.event.release.tag_name }}"
           branch: kubectl-plugin-${{ github.event.release.tag_name }}
           delete-branch: true
-          base: master
+          base: main
           signoff: true
           token: ${{ secrets.RELEASER_TOKEN }}
           body: |

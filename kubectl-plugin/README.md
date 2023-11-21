@@ -13,13 +13,13 @@ kubectl log2rbac
 or install the latest released version using Krew
 
 ```bash
-λ kubectl krew install --manifest-url=https://raw.githubusercontent.com/jkremser/log2rbac-operator/master/kubectl-plugin/log2rbac.yaml
+λ kubectl krew install --manifest-url=https://raw.githubusercontent.com/jkremser/log2rbac-operator/main/kubectl-plugin/log2rbac.yaml
 Installing plugin: log2rbac
 Installed plugin: log2rbac
 \
  | Use this plugin:
  | 	kubectl log2rbac
  | Documentation:
- | 	https://github.com/jkremser/log2rbac-operator/tree/master/kubectl-plugin
+ | 	https://github.com/jkremser/log2rbac-operator/tree/main/kubectl-plugin
 /
 ```
