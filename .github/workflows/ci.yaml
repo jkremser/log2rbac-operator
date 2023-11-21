@@ -43,7 +43,7 @@ jobs:
       - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # tag=v3.1.0
 
       - name: Lint using golangci-lint
-        uses: reviewdog/action-golangci-lint@22adb9d08853436506154413f5683c2e749d3b85 # v2
+        uses: reviewdog/action-golangci-lint@94d61e3205b61acf4ddabfeb13c5f8a13eb4167b # v2
         with:
           golangci_lint_version: v1.50.1
           go_version: ${{ env.GOLANG_VERSION }}
