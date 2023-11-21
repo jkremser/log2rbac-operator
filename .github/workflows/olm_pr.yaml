@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       bundleVersion:
-        description: Version of the bundle that should be generated. If not provided, the latest release tag is taken. Use 'master' for incorporating the latest changes in repo
+        description: Version of the bundle that should be generated. If not provided, the latest release tag is taken. Use 'main' for incorporating the latest changes in repo
         required: false
         default: ""
       upstreamRepo:
@@ -40,7 +40,7 @@ jobs:
           else
             version=${{ github.event.inputs.bundleVersion }}
           fi
-          if [ "${{ github.event.inputs.bundleVersion }}" == "master" ]; then
+          if [ "${{ github.event.inputs.bundleVersion }}" == "main" ]; then
             bundleDir=$(git describe --abbrev=0 --tags)
           else
             bundleDir=${version}

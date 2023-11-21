@@ -3,7 +3,7 @@ name: Sync Github Pages
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - '**.md'
 permissions:
@@ -32,7 +32,7 @@ jobs:
         with:
           author_name: ${{ github.actor }}
           author_email: ${{ github.actor }}@users.noreply.github.com
-          message: "Documentation sync from master"
+          message: "Documentation sync from main"
           commit: --signoff
           branch: gh-pages
         env:
