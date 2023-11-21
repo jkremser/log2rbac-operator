@@ -137,7 +137,7 @@ jobs:
           echo "importing image: ${IMG}"
           k3d image import ${IMG}:latest
           echo "Kubernetes vesion:"
-          kubectl version --short
+          kubectl version
 
       - name: Deploy the operator
         run: |
