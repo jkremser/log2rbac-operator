@@ -14,7 +14,7 @@ permissions:
 jobs:
   check:
     name: 'Check values.yaml and its schema in PR'
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@ebacdc22ef6c2cfb85ee5ded8f2e640f4c776dd5 # v2.0.0
