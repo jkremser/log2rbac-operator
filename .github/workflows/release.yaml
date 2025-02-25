@@ -11,7 +11,7 @@ env:
 jobs:
   release:
     name: Release & Sign images
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     outputs:
       container_tags: ${{ steps.container_info.outputs.container_tags }}
       container_info: ${{ steps.container_info.outputs.container_info }}
@@ -97,7 +97,7 @@ jobs:
   sbom:
     name: sbom
     needs: [release]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     env:
       TAGS: "${{ needs.release.outputs.container_tags }}"
 
@@ -149,7 +149,7 @@ jobs:
   provenance:
     name: provenance
     needs: [release]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@ebacdc22ef6c2cfb85ee5ded8f2e640f4c776dd5 # v2.0.0
@@ -197,7 +197,7 @@ jobs:
   container-provenance:
     name: container-provenance
     needs: [release]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     strategy:
       matrix:
@@ -257,7 +257,7 @@ jobs:
   crds:
     needs: [sbom, provenance, container-provenance]
     name: Ping doc.crds.dev
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@ebacdc22ef6c2cfb85ee5ded8f2e640f4c776dd5 # v2.0.0
@@ -271,7 +271,7 @@ jobs:
   slsa-summary:
     name: Summary
     needs: [crds, release]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     env:
       TAGS: "${{ needs.release.outputs.container_tags }}"
       REPOS: "${{ join(fromJSON(needs.release.outputs.container_repos), ' ') }}"
