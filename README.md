@@ -41,7 +41,7 @@ make deploy
 alternatively install it using [all-in-one yaml](deploy/all-in-one.yaml)
 
 ```bash
-kubectl apply -f http://bit.do/log2rbac
+kubectl apply -f https://shorter.me/log2rbac
 ```
 
 or helm:
