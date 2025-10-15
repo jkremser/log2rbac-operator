@@ -28,7 +28,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags "-w -s -X main.gitSh
 # Use distroless as minimal base image to package the log2rbac (manager) binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
 # gcr.io/distroless/static:static
-FROM gcr.io/distroless/static@sha256:b7b9a6953e7bed6baaf37329331051d7bdc1b99c885f6dbeb72d75b1baad54f9
+FROM gcr.io/distroless/static@sha256:87bce11be0af225e4ca761c40babb06d6d559f5767fbf7dc3c47f0f1a466b92c
 ARG GOLANG_VERSION
 ARG GIT_SHA
 ARG VERSION
